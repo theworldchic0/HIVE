@@ -25,11 +25,20 @@ def add_candidate(path):
 def record_price(symbol,price,timestamp):
  d={'event_type':'market_observation','event_id':f'PRICE-{symbol}-{timestamp.replace(":","").replace("+","")}','observed_at':timestamp,'symbol':symbol,'price':price,'cycle_clock':clock()}; out=EVENTS/(d['event_id']+'.json'); out.write_text(json.dumps(d,indent=2)); print(out)
 def main():
- p=argparse.ArgumentParser(); s=p.add_subparsers(dest='cmd',required=True); s.add_parser('status'); s.add_parser('verify'); s.add_parser('snapshot'); a=s.add_parser('add-candidate'); a.add_argument('path'); a=s.add_parser('record-price'); a.add_argument('--symbol',required=True); a.add_argument('--price',required=True,type=float); a.add_argument('--timestamp',required=True); q=p.parse_args();
+ p=argparse.ArgumentParser(); s=p.add_subparsers(dest='cmd',required=True); s.add_parser('status'); s.add_parser('verify'); s.add_parser('snapshot'); a=s.add_parser('add-candidate'); a.add_argument('path'); a=s.add_parser('record-price'); a.add_argument('--symbol',required=True); a.add_argument('--price',required=True,type=float); a.add_argument('--timestamp',required=True); s.add_parser('track'); a=s.add_parser('watch'); a.add_argument('--hours',type=float,default=6); s.add_parser('performance')
+ q=p.parse_args();
  if q.cmd=='status': status()
  elif q.cmd=='verify': verify()
  elif q.cmd=='snapshot': snapshot()
  elif q.cmd=='add-candidate': add_candidate(q.path)
  elif q.cmd=='record-price': record_price(q.symbol,q.price,q.timestamp)
+ elif q.cmd in ('track','watch','performance'):
+  import observatory as ob
+  if q.cmd=='performance': print(json.dumps(ob.performance(),indent=2)); return
+  while True:
+   try: print(json.dumps(ob.track(lambda d: clock(d))),flush=True)
+   except Exception as e: print(f'track failed: {e}',flush=True)
+   if q.cmd=='track': return
+   import time; time.sleep(q.hours*3600)
 
 if __name__=='__main__': main()

@@ -85,3 +85,20 @@ def test_source_failure_is_data_error_not_silence(hive_env, monkeypatch):
     s = watcher.tick()
     assert s["errors"] == 1
     assert watcher.load_state()["assets"][f"base:{TOKEN}"]["status"] == "DATA_ERROR"
+
+
+def test_reaction_tracking_and_lab(hive_env):
+    from hive import bus, net
+    from src import watcher
+    from src.lab import analyze
+    bus.publish("research.verdict", "research_agent", verdict())
+    watcher.tick()                      # price 5.0
+    for px in (3.0, 5.0, 3.0):          # cross 61.8 (≈4.44 on the 1→10 structure) down, up, down
+        net._cache.clear()
+        hive_env["price"] = px
+        watcher.tick()
+    res = analyze(watcher.load_config())
+    body = res["methods"]["body_high"]
+    assert body["events"] >= 3 and body["sample"] == "insufficient"
+    assert body["whipsaw_rate_pct"] > 0
+    assert "insufficient sample" in res["finding"]

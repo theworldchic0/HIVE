@@ -1,0 +1,427 @@
+{
+  "schema_version": "1.0.0",
+  "agent_id": "narrative_agent",
+  "comment": "META BEE = the always-on meta hunter. Sub-agents (workers) watch one source each on their own cadence and never stop; every observation is stored; daily / weekly / monthly rollups give each meta a machine-measured curve. It is EVIDENCE for the Research Bee's narrative curve, never a score and never a trade trigger. The taxonomy below is yours to grow: the 'emerging unclassified' list shows repeated names that match no meta \u2014 that is where new metas are born.",
+  "workers": {
+    "cg_categories": {
+      "enabled": true,
+      "every_minutes": 60
+    },
+    "cg_trending": {
+      "enabled": true,
+      "every_minutes": 30
+    },
+    "gt_trending": {
+      "enabled": true,
+      "every_minutes": 30,
+      "networks": [
+        "base",
+        "solana",
+        "eth",
+        "robinhood",
+        "bsc"
+      ]
+    },
+    "ds_boosts": {
+      "enabled": true,
+      "every_minutes": 15
+    },
+    "llama_categories": {
+      "enabled": true,
+      "every_minutes": 360
+    },
+    "reddit": {
+      "enabled": false,
+      "every_minutes": 60,
+      "subs": [
+        "CryptoCurrency",
+        "CryptoMoonShots",
+        "solana",
+        "Base"
+      ],
+      "comment": "keyless JSON is often blocked without OAuth \u2014 off by default"
+    }
+  },
+  "weights": {
+    "cg_trending_hit": 3,
+    "gt_trending_hit": 2,
+    "ds_boost_hit": 0.5,
+    "ds_profile_hit": 1,
+    "reddit_hit": 1,
+    "cg_mcap_change_24h_per_pt": 0.2,
+    "cg_mcap_change_clip": 4,
+    "llama_tvl_change_7d_per_pt": 0.1,
+    "llama_tvl_change_clip": 3,
+    "comment": "Attention = trending/boost/profile hits (paid DexScreener boosts count less: bought attention); Capital = category market-cap change + DeFi TVL change. Transparent on purpose."
+  },
+  "curve": {
+    "min_hours_daily": 48,
+    "min_days_weekly": 14,
+    "min_days_monthly": 60,
+    "rise_pct": 15,
+    "strong_pct": 50
+  },
+  "retention_days": 400,
+  "metas": [
+    {
+      "name": "AI Agents",
+      "keywords": [
+        "agent",
+        "agents",
+        "ai",
+        "gpt",
+        "llm",
+        "autonomous",
+        "virtual",
+        "eliza",
+        "aixbt"
+      ],
+      "cg_categories": [
+        "AI Agents",
+        "Artificial Intelligence",
+        "AI Framework",
+        "AI Applications"
+      ],
+      "llama_categories": [
+        "AI Agents"
+      ]
+    },
+    {
+      "name": "Privacy",
+      "keywords": [
+        "privacy",
+        "private",
+        "zk",
+        "zero-knowledge",
+        "anon",
+        "mixer",
+        "stealth",
+        "fhe",
+        "zec",
+        "xmr"
+      ],
+      "cg_categories": [
+        "Privacy Coins",
+        "Zero Knowledge (ZK)",
+        "Privacy"
+      ],
+      "llama_categories": [
+        "Privacy"
+      ]
+    },
+    {
+      "name": "RWA / Tokenization",
+      "keywords": [
+        "rwa",
+        "tokenized",
+        "treasury",
+        "treasuries",
+        "real world",
+        "bond",
+        "credit"
+      ],
+      "cg_categories": [
+        "Real World Assets (RWA)",
+        "Tokenized"
+      ],
+      "llama_categories": [
+        "RWA",
+        "RWA Lending"
+      ]
+    },
+    {
+      "name": "Tokenized Stocks",
+      "keywords": [
+        "stock",
+        "equity",
+        "xstock",
+        "tsla",
+        "nvda",
+        "aapl",
+        "robinhood"
+      ],
+      "cg_categories": [
+        "Tokenized Stock"
+      ],
+      "llama_categories": []
+    },
+    {
+      "name": "Prediction Markets",
+      "keywords": [
+        "prediction",
+        "predict",
+        "polymarket",
+        "kalshi",
+        "bet",
+        "odds"
+      ],
+      "cg_categories": [
+        "Prediction Markets"
+      ],
+      "llama_categories": [
+        "Prediction Market"
+      ]
+    },
+    {
+      "name": "Perps / Trading Venues",
+      "keywords": [
+        "perp",
+        "perps",
+        "perpetual",
+        "leverage",
+        "hyperliquid",
+        "exchange"
+      ],
+      "cg_categories": [
+        "Perpetuals",
+        "Derivatives",
+        "Exchange-based Tokens",
+        "Decentralized Exchange (DEX)"
+      ],
+      "llama_categories": [
+        "Derivatives",
+        "Dexs"
+      ]
+    },
+    {
+      "name": "Stablecoins / Payments",
+      "keywords": [
+        "stable",
+        "stablecoin",
+        "usd",
+        "payments",
+        "pay",
+        "remittance"
+      ],
+      "cg_categories": [
+        "Stablecoins",
+        "Payment Solutions"
+      ],
+      "llama_categories": [
+        "CDP",
+        "Algo-Stables",
+        "Payments"
+      ]
+    },
+    {
+      "name": "Dog Memes",
+      "keywords": [
+        "dog",
+        "doge",
+        "shib",
+        "inu",
+        "puppy",
+        "wif",
+        "pup"
+      ],
+      "cg_categories": [
+        "Dog-Themed"
+      ],
+      "llama_categories": []
+    },
+    {
+      "name": "Cat Memes",
+      "keywords": [
+        "cat",
+        "kitty",
+        "meow",
+        "popcat",
+        "mew"
+      ],
+      "cg_categories": [
+        "Cat-Themed"
+      ],
+      "llama_categories": []
+    },
+    {
+      "name": "Frog Memes",
+      "keywords": [
+        "pepe",
+        "frog",
+        "toad"
+      ],
+      "cg_categories": [
+        "Frog-Themed"
+      ],
+      "llama_categories": []
+    },
+    {
+      "name": "Political / Celebrity Memes",
+      "keywords": [
+        "trump",
+        "maga",
+        "elon",
+        "biden",
+        "president",
+        "celebrity"
+      ],
+      "cg_categories": [
+        "Political Meme",
+        "Celebrity-Themed"
+      ],
+      "llama_categories": []
+    },
+    {
+      "name": "Launchpads / Creator Coins",
+      "keywords": [
+        "pump",
+        "launch",
+        "launchpad",
+        "clanker",
+        "zora",
+        "creator",
+        "bonk",
+        "bags"
+      ],
+      "cg_categories": [
+        "Launchpad",
+        "Creator Coins"
+      ],
+      "llama_categories": [
+        "Launchpad"
+      ]
+    },
+    {
+      "name": "SocialFi",
+      "keywords": [
+        "social",
+        "friend",
+        "farcaster",
+        "lens",
+        "community"
+      ],
+      "cg_categories": [
+        "SocialFi"
+      ],
+      "llama_categories": [
+        "SoFi"
+      ]
+    },
+    {
+      "name": "DePIN / Compute",
+      "keywords": [
+        "depin",
+        "compute",
+        "gpu",
+        "render",
+        "storage",
+        "wireless",
+        "iot"
+      ],
+      "cg_categories": [
+        "DePIN",
+        "Distributed Computing"
+      ],
+      "llama_categories": []
+    },
+    {
+      "name": "Gaming",
+      "keywords": [
+        "game",
+        "gaming",
+        "play",
+        "quest",
+        "arena"
+      ],
+      "cg_categories": [
+        "Gaming (GameFi)",
+        "Play To Earn"
+      ],
+      "llama_categories": [
+        "Gaming"
+      ]
+    },
+    {
+      "name": "Restaking / Yield",
+      "keywords": [
+        "restake",
+        "restaking",
+        "yield",
+        "staking",
+        "lst",
+        "lrt"
+      ],
+      "cg_categories": [
+        "Liquid Restaking Tokens",
+        "Liquid Staking",
+        "Yield"
+      ],
+      "llama_categories": [
+        "Liquid Restaking",
+        "Restaking",
+        "Liquid Staking",
+        "Yield"
+      ]
+    },
+    {
+      "name": "Lending / Credit",
+      "keywords": [
+        "lend",
+        "lending",
+        "borrow",
+        "morpho",
+        "aave",
+        "credit"
+      ],
+      "cg_categories": [
+        "Lending/Borrowing"
+      ],
+      "llama_categories": [
+        "Lending",
+        "CDP"
+      ]
+    },
+    {
+      "name": "Bitcoin Ecosystem / Sound Money",
+      "keywords": [
+        "btc",
+        "bitcoin",
+        "sats",
+        "ordinals",
+        "runes",
+        "gold"
+      ],
+      "cg_categories": [
+        "Bitcoin Ecosystem",
+        "Ordinals",
+        "Gold-backed"
+      ],
+      "llama_categories": [
+        "Bitcoin"
+      ]
+    },
+    {
+      "name": "Oracles / Infrastructure",
+      "keywords": [
+        "oracle",
+        "rpc",
+        "bridge",
+        "interop",
+        "data"
+      ],
+      "cg_categories": [
+        "Oracle",
+        "Infrastructure",
+        "Interoperability"
+      ],
+      "llama_categories": [
+        "Oracle",
+        "Bridge"
+      ]
+    },
+    {
+      "name": "DeSci / Health",
+      "keywords": [
+        "desci",
+        "science",
+        "bio",
+        "research",
+        "longevity"
+      ],
+      "cg_categories": [
+        "DeSci"
+      ],
+      "llama_categories": []
+    }
+  ]
+}

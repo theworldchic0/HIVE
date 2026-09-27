@@ -38,7 +38,7 @@ def test_confidence_derived_from_scores_when_absent(world):
     world.m.add(T2)
     world.m.add(T3)
     pub_v(verdict(T1, confidence=None, scores={"core_quality": 46, "timing": 18}))
-    pub_v(verdict(T2, confidence=None, scores={"core_quality": 38, "timing": 14}))
+    pub_v(verdict(T2, confidence=None, scores={"core_quality": 41, "timing": 14}))
     pub_v(verdict(T3, confidence=None, scores={"core_quality": 20, "timing": 5}))
     world.bee.tick()
     got = {i["contract"]: i["usd"] for i in intents(world)}

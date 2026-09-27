@@ -29,7 +29,7 @@ EVENT_SCHEMAS = {
 }
 # free-form event types that are allowed without a schema (observability only)
 FREEFORM_PREFIXES = ("trader.status", "trader.paused", "trader.resumed", "fib.structure", "fib.data_error",
-                     "fib.learning", "queen.", "scout.", "bottom_blueprint_candidate")
+                     "fib.learning", "queen.", "scout.", "meta.", "bottom_blueprint_candidate")
 
 
 class ContractError(ValueError):
@@ -93,7 +93,8 @@ def errors_for(event_type: str, payload) -> list[str]:
     _check(payload, schema(name), "payload", errs)
     # cross-field rules the schema subset can't express
     if event_type == "research.verdict" and isinstance(payload, dict) and not errs:
-        exp = f"{str(payload['chain']).lower()}:{str(payload['contract']).lower()}"
+        from .chains import asset_id as _aid
+        exp = _aid(str(payload["chain"]), str(payload["contract"]))
         if payload["asset_id"] != exp:
             errs.append(f"payload.asset_id must equal '<chain>:<contract>' lowercase ({exp})")
     return errs

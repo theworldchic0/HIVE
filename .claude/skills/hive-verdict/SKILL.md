@@ -23,7 +23,11 @@ below. Tokens from the queue get `discovery: true`. `scout.py dismiss <symbol> -
 - If identity can't be resolved, publish `identity.status: "UNRESOLVED"` (or `HARD_STOP`). The Hive then
   records it and nothing trades.
 
-## 2. Fill the verdict (`hive/contracts/research.verdict.schema.json`)
+## 2a. If the Research Bee produced it (the normal path)
+`/nuk3r2` already wrote `hive_data/research/<run>/verdict.json` via `score.py finalize`. It's valid
+against the contract; don't hand-edit it. Go straight to step 3 with that file.
+
+## 2. Fill the verdict by hand (only if not produced by the Research Bee) (`hive/contracts/research.verdict.schema.json`)
 Copy `hive/contracts/examples/research.verdict.example.json` and fill:
 `asset_id` (`<chain>:<contract lowercase>`), `symbol`, `researched_at` (UTC now), `gate.result` PASS/FAIL
 + `gate.score` /30, `rank` BUY/WATCH/AVOID/FAIL, `confidence` high/medium/low (your research conviction,

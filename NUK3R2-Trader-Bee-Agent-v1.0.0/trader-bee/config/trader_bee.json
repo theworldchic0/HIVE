@@ -37,13 +37,13 @@
     }
   },
   "confidence_bands": {
-    "comment": "Used ONLY when a verdict carries no explicit `confidence`. core_quality / timing come from the CoinPicks Opportunity Matrix. The high band mirrors the CQ45+/T17+ exceptional tier; medium and low are operator defaults \u2014 confirm or change them.",
+    "comment": "Used ONLY when a verdict carries no explicit `confidence` (the Research Bee always sets it). Mirrors the beekeeper's Opportunity Matrix: Exceptional candidate (Core 45+ / Timing 17+) = high ($10) \u00b7 Priority Opportunity (40+ / 13+) = medium ($5) \u00b7 every other class = low ($1).",
     "high": {
       "min_core_quality": 45,
       "min_timing": 17
     },
     "medium": {
-      "min_core_quality": 35,
+      "min_core_quality": 40,
       "min_timing": 13
     },
     "fallback": "low"

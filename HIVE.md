@@ -23,10 +23,11 @@ orders, the fake-pool guard and the registry discipline.
 | Agent | Folder | Runs | Can trade? |
 |---|---|---|---|
 | Queen Bee | `NUK3R2-Queen-Bee-Agent-v1.2.0/` | on demand (`scripts/queen.py audit`) and as telemetry sink | no (may pause/disarm the Trader Bee) |
+| **Meta Bee** | `NUK3R2-Meta-Bee-v1.0.0/meta-bee/` | nonstop (workers every 15 min–6 h) | no (meta board: daily / weekly / monthly curves) |
 | Discovery Scout | `NUK3R2-Discovery-Scout-v1.0.0/discovery-scout/` | every 6 h | no (queues candidates for research only) |
-| Research Bee | Claude Code + `.claude/skills/hive-verdict/` | when you research | no |
+| **Research Bee** | `NUK3R2-Research-Bee-v1.0.0/research-bee/` + `/nuk3r2 TICKER` in Claude Code | when you research | no (writes the report + verdict; you publish) |
 | Market Direction | `NUK3R2-Market-Direction-Agent-v1.1.0-Hive-Update/` | weekly | no |
-| Bottom Blueprint Observatory | `NUK3R2-Bottom-Blueprint-Agent-v1.2.0-Hive-Update/` | clock | no |
+| Bottom Blueprint Observatory | `NUK3R2-Bottom-Blueprint-Agent-v1.2.0-Hive-Update/` | clock + passer cohort every 6 h | no (tracks every PASS vs BTC until bull end / 5th halving) |
 | Fib Bee | `NUK3R2_Fib_Agent_v0.1.0/…` (v0.2.0) | every 15 min | no |
 | **Trader Bee** | `NUK3R2-Trader-Bee-Agent-v1.0.0/trader-bee/` | every 60 s | **buys only, own wallet, bounded; paper until you arm it** |
 
@@ -40,6 +41,12 @@ python -m hive tail -n 30   # what just moved on the bus
 ```
 Requirements: Python 3.10+ (standard library only) and Node.js 20+ for the Trader Bee executor
 (`cd NUK3R2-Trader-Bee-Agent-v1.0.0/trader-bee/executor && npm install`).
+
+## Research: paste a ticker
+In Claude Code, inside this folder: **`/nuk3r2 PONS`** (or `HOOKR | Robinhood Chain`, or a contract). The
+Research Bee runs your full Phase 1 method: facts collected by code, judgments made by Claude with
+evidence for every score, math and report by `score.py`. You read the one-page report, then publish.
+The Meta Bee's curves are included as supporting evidence.
 
 ## How research reaches the Trader Bee
 The Research Bee (a Claude Code session running the CoinPicks method) finishes a token and writes a
@@ -66,6 +73,8 @@ cd NUK3R2_Fib_Agent_v0.1.0/NUK3R2_Fib_Agent_v0.1.0 && python -m pytest -q tests
 cd NUK3R2-Trader-Bee-Agent-v1.0.0/trader-bee && python -m pytest -q tests && (cd executor && npm run selftest)
 cd NUK3R2-Bottom-Blueprint-Agent-v1.2.0-Hive-Update/bottom-blueprint-agent && python -m pytest -q tests
 cd NUK3R2-Discovery-Scout-v1.0.0/discovery-scout && python -m pytest -q tests
+cd NUK3R2-Research-Bee-v1.0.0/research-bee && python -m pytest -q tests
+cd NUK3R2-Meta-Bee-v1.0.0/meta-bee && python -m pytest -q tests
 ```
 
 ## Known limits (said plainly)

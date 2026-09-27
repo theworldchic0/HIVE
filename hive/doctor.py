@@ -54,6 +54,8 @@ def run(offline: bool = False) -> int:
     if not offline:
         from .chains import CHAINS
         for name, c in CHAINS.items():
+            if not c.get("tradable"):
+                continue
             env = "BASE_RPC_URL" if name == "base" else "ROBINHOOD_RPC_URL"
             url = keys.current(keys.BY_NAME[env]) or c["rpc"]
             try:

@@ -92,12 +92,21 @@ def scout_queue() -> dict:
     return {"queued": rows[:50], "queued_count": len(rows), "researched": done[:10], "total_seen": len(q)}
 
 
+def meta_state() -> dict:
+    st = _json_file(sub("meta") / "state.json", None)
+    if not st:
+        return {"ok": False, "note": "Meta Bee has not produced a board yet (it starts with `python -m hive start`)."}
+    return {"ok": True, "updated_at": st.get("updated_at"), "history_hours": st.get("history_hours"), "metas": st.get("metas", [])[:12],
+            "top": st.get("top"), "emerging": st.get("emerging_unclassified", [])[:12], "workers": st.get("workers", {})}
+
+
 def hive_state() -> dict:
     q = queen_client.snapshot()
     return {"queen": {"agents": q.get("agents", []), "recommendations": q.get("open_recommendations", []), "timestamp": q.get("timestamp_utc"),
                       "error": q.get("error")},
             "blueprint": blueprint(), "market_direction": market_direction(), "fib": fib(), "trader": trader_status(),
-            "setup": setup_status(), "scout": scout_queue(),
+            "setup": setup_status(), "scout": scout_queue(), "meta": meta_state(),
+            "cohort": _json_file(sub("bottom_blueprint") / "performance.json", None),
             "events": list(reversed(bus.tail(40)))}
 
 

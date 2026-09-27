@@ -124,7 +124,7 @@ The Bee never edits this file. Every number is yours.
 | `strategies.zone_entry.size_usd` | 1 | buy-zone entry size |
 | `…eligible_ranks` | BUY, WATCH | ranks that can trigger |
 | `strategies.zone_entry.cooldown_hours` | 24 | minimum gap between zone buys on one token |
-| `confidence_bands` | high CQ≥45 & T≥17 · medium CQ≥35 & T≥13 · else low | used **only** when a verdict has no `confidence` field; **medium is an operator default, confirm it** |
+| `confidence_bands` | high = Exceptional (Core 45+ / Timing 17+) · medium = Priority Opportunity (40+ / 13+) · else low | your Opportunity Matrix; used only when a verdict has no `confidence` (the Research Bee always sets it) |
 | `budget.daily_usd / weekly_usd` | 40 / 150 | rolling 24h / 7d spend caps |
 | `budget.max_buys_per_day` | 20 | |
 | `budget.max_exposure_per_asset_usd` | 25 | lifetime cap per token |

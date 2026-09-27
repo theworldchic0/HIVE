@@ -73,9 +73,9 @@ def test_poison_guard():
 
 
 def test_secrets_ignore_placeholders(monkeypatch):
-    from hive import secrets
+    from hive import env_keys
     monkeypatch.setenv("ONEINCH_API_KEY", "PASTE_YOUR_1INCH_API_KEY_HERE")
-    assert secrets.get("ONEINCH_API_KEY") is None
+    assert env_keys.get("ONEINCH_API_KEY") is None
 
 
 def _serve():

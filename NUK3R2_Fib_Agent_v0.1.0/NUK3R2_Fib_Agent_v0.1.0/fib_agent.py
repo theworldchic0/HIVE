@@ -5,6 +5,7 @@
   python fib_agent.py watch [--interval 900]    loop forever (Ctrl+C to stop)
   python fib_agent.py status                    watchlist + current zone per asset
   python fib_agent.py structure --candles c.json [--price 0.01]   offline: build + classify from a file
+  python fib_agent.py lab [--propose]           wick vs body: which anchor whipsaws less? (30+ crossings each before any finding)
 """
 import argparse
 import json
@@ -27,6 +28,8 @@ def main() -> int:
     w = s.add_parser("watch")
     w.add_argument("--interval", type=int, default=None)
     s.add_parser("status")
+    lb = s.add_parser("lab")
+    lb.add_argument("--propose", action="store_true", help="file a Queen change proposal if the sample is sufficient")
     st = s.add_parser("structure")
     st.add_argument("--candles", required=True)
     st.add_argument("--price", type=float, default=None)
@@ -45,6 +48,24 @@ def main() -> int:
     elif a.cmd == "status":
         s_ = watcher.load_state()
         print(json.dumps({"watchlist": s_["watchlist"], "assets": s_["assets"]}, indent=2))
+    elif a.cmd == "lab":
+        from src.lab import analyze
+        res = analyze(cfg)
+        print(json.dumps(res, indent=2))
+        if a.propose:
+            if "difference_pp" not in res:
+                print("No proposal: sample too small. Nothing changes.")
+            else:
+                import importlib.util
+                from hive.paths import QUEEN_DIR
+                spec = importlib.util.spec_from_file_location("q", QUEEN_DIR / "scripts" / "queen.py")
+                q = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(q)
+                print(json.dumps(q.propose("fib_methodology", "Fib anchor method review", "Which anchor gives cleaner NUK3R2 reactions?",
+                                           res, "Consider making the better-performing anchor the primary for buy-zone checks",
+                                           res["finding"], "Small or regime-specific samples can mislead", "Keep both structures stored; revert the rule",
+                                           "Re-run `fib_agent.py lab` on the next 30 crossings"), indent=2))
+                print("Filed as PROPOSED. The Queen never applies it; the beekeeper approves or rejects.")
     elif a.cmd == "structure":
         candles = json.loads(Path(a.candles).read_text())
         out = build(candles, "offline", cfg.get("structure_rules"))

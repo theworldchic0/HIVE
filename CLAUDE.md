@@ -117,7 +117,10 @@ Rules for you, Claude, on top of the constitution above:
   arm it, never create or fund its wallet for the human, never edit `config/trader_bee.json`
   sizes/budgets/gates/mode, and never approve a parked intent.** Those are the Beekeeper's acts. You may
   explain, run `status`, run tests, run paper mode, and `pause`/`disarm` when asked (safe direction).
-- When research on a token is finished, hand it to the Hive with the `hive-verdict` skill
+- "Research X" / a pasted ticker / `/nuk3r2 X` → the `nuk3r2-researcher` subagent runs the Phase 1 method
+  (`NUK3R2-Research-Bee-v1.0.0/research-bee/METHOD.md`). Collector facts, your judgments with evidence,
+  `score.py` math. Identity AMBIGUOUS/UNRESOLVED → stop and ask the beekeeper; never guess a contract.
+- When research on a token is finished and the beekeeper approves, hand it to the Hive with the `hive-verdict` skill
   (`.claude/skills/hive-verdict/SKILL.md`). Identity = chain + verified contract. Unverifiable fields
   are null, never guessed.
 - Market Direction is context, never a trade trigger. Bottom Blueprint snapshots are immutable.

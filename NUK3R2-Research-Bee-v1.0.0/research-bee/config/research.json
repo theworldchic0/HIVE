@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.0.0",
+  "agent_id": "research_agent",
+  "comment": "NUK3R2 Research System \u2014 Phase 1, Narrative Intelligence Edition. The collector gathers FACTS; Claude makes the qualitative JUDGMENTS in a scorecard; score.py does the arithmetic and enforces the evidence standard. Nothing here auto-buys: the verdict is published only after the beekeeper sees the report.",
+  "gate": {
+    "pass_min": 16,
+    "max": 30
+  },
+  "liquidity_tiers": {
+    "comment": "Ruling R-10 bands (closes the $200K-$1M gap in the source PDF): pool Micro <$50K \u00b7 Low $50K-$200K \u00b7 Medium $200K-$6M \u00b7 High >$6M; \u00b12% depth per the PDF (Low <$15K \u00b7 Medium $15K-$100K \u00b7 High >$100K). Tier = the LOWER of the two axes, but ONLY a measured depth counts; the collector's constant-product depth figure is an estimate, shown in the report and never used for the tier.",
+    "axis": "lower_of_two",
+    "pool_usd": [
+      [
+        "Micro",
+        0
+      ],
+      [
+        "Low",
+        50000
+      ],
+      [
+        "Medium",
+        200000
+      ],
+      [
+        "High",
+        6000000
+      ]
+    ],
+    "depth_2pct_usd": [
+      [
+        "Low",
+        0
+      ],
+      [
+        "Medium",
+        15000
+      ],
+      [
+        "High",
+        100000
+      ]
+    ]
+  },
+  "timing": {
+    "stage_points": {
+      "1": 3,
+      "2": 5,
+      "3": 4,
+      "4": 1,
+      "5": 0
+    },
+    "stage_revival_bonus": 1,
+    "stage_comment": "Audit fix: the source PDF adds the ordinal Stage (1 Birth .. 5 Fading) straight into Timing, so a FADING story out-scored an early one. Stage is mapped to timing points instead: Early Formation 5 > Rising 4 > Birth 3 > Peak/Mature 1 > Fading 0; Revival +1 (cap 5). BEEKEEPER SETTING \u2014 change the numbers, never the direction.",
+    "curve_points": {
+      "rising": 5,
+      "revival": 5,
+      "early_rising": 4,
+      "accelerating": 4,
+      "flat": 2,
+      "peaking": 1,
+      "fading": 1,
+      "declining": 0
+    },
+    "curve_comment": "Ruling R-11 curve polarity."
+  },
+  "matrix": {
+    "exceptional": {
+      "core": 45,
+      "timing": 17
+    },
+    "priority": {
+      "core": 40,
+      "timing": 13
+    },
+    "confidence": {
+      "exceptional": "high",
+      "priority_opportunity": "medium",
+      "quality_watch": "low",
+      "narrative_speculation_watch": "low",
+      "pass_avoid": "low"
+    }
+  },
+  "btc_benchmark": {
+    "halving_date": "2024-04-20",
+    "cycle_top": {
+      "date": "2025-10-07",
+      "price": 124777
+    }
+  },
+  "chains_searched": [
+    "base",
+    "robinhood",
+    "solana",
+    "ethereum",
+    "arbitrum",
+    "bsc"
+  ],
+  "official_site_contract_check": true
+}

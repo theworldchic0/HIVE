@@ -122,6 +122,19 @@ def seed():
         bus.publish("research.request", "discovery_scout", payload)
         queue[aid] = {**payload, "status": "QUEUED", "first_seen": now, "last_seen": now, "requested_at": now, "times_seen": 1}
     (sub("scout") / "queue.json").write_text(json.dumps(queue, indent=1))
+    mk = lambda n, d, cd, w, cw, mo, cm, toks, cap=None, tvl=None: {"name": n, "score_daily": d, "curve_daily": cd, "score_weekly": w, "curve_weekly": cw,  # noqa: E731
+                                                                     "score_monthly": mo, "curve_monthly": cm, "top_tokens_24h": toks, "sources_24h": {"cg_trending": 3, "gt_trending": 5},
+                                                                     "capital": {"cg_mcap_change_24h": cap, "llama_tvl_change_7d": tvl}}
+    (sub("meta") / "state.json").write_text(json.dumps({"updated_at": now, "history_hours": 1512.0, "metas": [
+        mk("AI Agents", 14.2, "accelerating", 9.1, "rising", 6.3, "early_rising", ["DEMOAGENT", "DEMOHIGH"], 11.8),
+        mk("Privacy", 9.8, "rising", 8.7, "rising", 7.9, "rising", ["DEMOZEC"], 4.1),
+        mk("Prediction Markets", 6.1, "early_rising", 3.2, "flat", 2.9, "flat", ["DEMOPRED"], None, 18.5),
+        mk("Tokenized Stocks", 4.4, "flat", 4.6, "flat", 5.2, "fading", ["DEMOSTOCK"]),
+        mk("Dog Memes", 3.1, "fading", 5.0, "peaking", 6.8, "rising", ["DEMODOG"], -3.2)],
+        "top": {"daily": ["AI Agents", "Privacy"]}, "emerging_unclassified": [{"word": "demozorbo", "hits_24h": 5}, {"word": "demoquack", "hits_24h": 3}],
+        "workers": {"cg_trending": {"last_error": None}, "reddit": {"last_error": None}}}, indent=1))
+    (sub("bottom_blueprint") / "performance.json").write_text(json.dumps({"tracking_until": "2028-04-05", "all": {"n": 7, "observed": 6, "median_excess_pp": 4.2,
+                                                                          "pct_beating_btc": 66.7}, "since_window_start": {"n": 5}}))
     bee = TraderBee()
     for _ in range(2):
         bee.tick()

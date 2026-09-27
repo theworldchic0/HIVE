@@ -137,6 +137,18 @@ def scan_asset(item: dict, astate: dict, cfg: dict) -> dict | None:
                            "wick_zone": ev["wick"], "body_zone": ev["body"], "flags": st["flags"],
                            "pool": item["pool"], "pool_source": item.get("pool_source")},
                "levels": st["levels"]["body_high"]}
+    # Reaction tracker: level crossings between the previous scan and now, on BOTH anchor methods.
+    prev_px = astate.get("price") if astate.get("structure_id") == st["structure_id"] else None
+    if prev_px:
+        for method in ("wick_high", "body_high"):
+            for lvl, lvl_px in st["levels"][method].items():
+                if lvl in ("0.0", "100.0"):
+                    continue
+                kind = "breakdown" if prev_px >= lvl_px > price else "reclaim" if prev_px < lvl_px <= price else None
+                if kind:
+                    observe({"type": "reaction", "asset_id": item["asset_id"], "symbol": item["symbol"], "structure_id": st["structure_id"],
+                             "anchor_method": method, "target_level": float(lvl), "level_price": lvl_px, "event_type": kind,
+                             "price": price, "previous_price": prev_px, "timestamp": now_iso(), "study_mode": st["study_mode"]})
     published = None
     if ev["in_buy_zone"] and not was_in:
         published = bus.publish("fib.zone.entered", AGENT, payload)

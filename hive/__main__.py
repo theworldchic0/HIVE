@@ -37,13 +37,15 @@ def start(port: int, skip_setup: bool = False, no_browser: bool = False) -> int:
             setup_run(only_missing=True)
         else:
             print("Some API keys are not set yet — run `python -m hive setup` in a terminal.", flush=True)
-    from .paths import FIB_DIR, SCOUT_DIR, TRADER_DIR
+    from .paths import BLUEPRINT_DIR, FIB_DIR, META_DIR, SCOUT_DIR, TRADER_DIR
     procs = [
+        subprocess.Popen([sys.executable, str(META_DIR / "metabee.py"), "run"], cwd=str(META_DIR)),
+        subprocess.Popen([sys.executable, str(BLUEPRINT_DIR / "bottom_blueprint.py"), "watch", "--hours", "6"], cwd=str(BLUEPRINT_DIR)),
         subprocess.Popen([sys.executable, str(SCOUT_DIR / "scout.py"), "watch"], cwd=str(SCOUT_DIR)),
         subprocess.Popen([sys.executable, str(FIB_DIR / "fib_agent.py"), "watch"], cwd=str(FIB_DIR)),
         subprocess.Popen([sys.executable, str(TRADER_DIR / "trader.py"), "run"], cwd=str(TRADER_DIR)),
     ]
-    print("Hive started: Discovery Scout (6h) + Fib Bee watcher (15m) + Trader Bee loop (60s). UI below.", flush=True)
+    print("Hive started: Meta Bee (nonstop) · Discovery Scout (6h) · Fib Bee (15m) · Blueprint cohort (6h) · Trader Bee (60s). UI below.", flush=True)
     try:
         import threading
         import webbrowser

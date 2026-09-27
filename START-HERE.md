@@ -78,9 +78,13 @@ Then the Hive starts and your browser opens **http://127.0.0.1:8790**.
 
 ## 5. Feed it research
 
-The Scout finds candidates. You research them in Claude Code (this folder), and when a token is
-finished Claude uses the **`hive-verdict`** skill to publish the verdict (gate, rank, confidence). From
-then on:
+Open Claude Code in this folder and type **`/nuk3r2 PONS`** (or `/nuk3r2 HOOKR | Robinhood Chain`, or
+paste a contract). The **Research Bee** runs your whole Phase 1 method. It verifies the contract first
+(and stops to ask you if there are look-alike tokens), then works through the gate, cycle, narrative,
+Shiller /14, stage and curve, constellation, archetype, asset expression, liquidity, team, smart
+money, Core /50, Timing /20 and the decision. You get the one-page report. Nothing is published until
+you say so. Good places to start: the **Research queue** (the Discovery Scout's finds) and the **Meta
+Radar** (what the market is trading now, daily / weekly / monthly). Once you publish:
 - a **discovery** verdict that passes → the Trader Bee buys **$10 / $5 / $1** (high / medium / low confidence)
 - every passing **BUY/WATCH** token → the Fib Bee watches it → **$1** when it enters the NUK3R2 buy zone
 

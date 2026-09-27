@@ -40,5 +40,7 @@
     "threshold_pct_above_200dma": 5,
     "required_consecutive_days": 45,
     "source": "shared_context/latest.json momentum.rule (published Blueprint snapshot BB-2026-09-24-001)"
-  }
+  },
+  "bull_cycle_end": null,
+  "bull_cycle_end_comment": "BEEKEEPER SETTING: set the date (YYYY-MM-DD) once the bull-cycle end is known; cohort tracking stops at min(bull_cycle_end, fifth_halving_projected)."
 }

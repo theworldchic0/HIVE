@@ -26,6 +26,9 @@ MIN_INTERVAL_S = {
     "pro-api.coingecko.com": 0.3,
     "api.dexscreener.com": 0.25,
     "api.gopluslabs.io": 1.0,
+    "api.llama.fi": 0.5,
+    "coins.llama.fi": 0.5,
+    "api.exchange.coinbase.com": 0.35,
 }
 USER_AGENT = "NUK3R2-Hive/1.0 (+local)"
 
@@ -106,3 +109,19 @@ def fetch_json(url: str, *, headers: dict | None = None, body: dict | None = Non
             continue
         break
     raise last_err or NetError(f"{host}: request failed")
+
+
+def fetch_text(url: str, *, timeout: float = 12, max_bytes: int = 2_000_000, agent: str = "hive", operation: str = "") -> str:
+    """Plain GET for HTML/text (official project sites). Raises NetError on failure."""
+    host = urlparse(url).netloc
+    _pace(host)
+    t0 = time.monotonic()
+    try:
+        status, raw = _do(url, {"User-Agent": "Mozilla/5.0 (NUK3R2-Hive research)", "Accept": "text/html,*/*"}, None, timeout)
+    except Exception as e:  # noqa: BLE001
+        queen_client.usage(agent, host, operation, failures_=1)
+        raise NetError(f"{host}: {type(e).__name__}: {e}") from e
+    queen_client.usage(agent, host, operation, latency_ms=(time.monotonic() - t0) * 1000, failures_=0 if status == 200 else 1)
+    if status != 200:
+        raise NetError(f"{host}: HTTP {status}", status)
+    return (raw or b"")[:max_bytes].decode("utf-8", errors="ignore")

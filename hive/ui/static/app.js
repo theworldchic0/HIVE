@@ -42,6 +42,16 @@ function renderBlueprint(b) {
     <div class="stat" style="max-width:320px"><small>Momentum rule</small><span class="sub">${esc(b.momentum_rule || "—")}</span></div>`;
 }
 
+function renderCohort(p) {
+  const el = $("blueprint");
+  if (!el || !p) return;
+  const a = p.all || {}, w = p.since_window_start || {};
+  const box = document.createElement("div");
+  box.className = "stat";
+  box.innerHTML = `<small>Passer cohort vs BTC</small><b>${a.n || 0} tracked</b><span class="sub">${a.observed ? `median ${a.median_excess_pp >= 0 ? "+" : ""}${a.median_excess_pp} pp · ${a.pct_beating_btc}% beating BTC` : "no observations yet"} · since window start: ${w.n || 0} · until ${esc(p.tracking_until)}</span>`;
+  el.appendChild(box);
+}
+
 function renderMD(m) {
   const miss = !m || !m.status || m.status === "MISSING";
   $("md").innerHTML = miss
@@ -202,6 +212,25 @@ function renderScout(sc) {
   }</tbody></table>`;
 }
 
+const CURVE_PILL = { accelerating: "ok", rising: "ok", early_rising: "ok", revival: "ok", flat: "", peaking: "warn", fading: "warn", declining: "bad", insufficient_data: "" };
+function curvePill(c) { return `<span class="pill ${CURVE_PILL[c] ?? ""}">${esc(String(c || "—").replace("_", " "))}</span>`; }
+
+function renderMeta(m) {
+  if (!m || !m.ok) { $("meta").innerHTML = `<div class="empty">${esc((m && m.note) || "no meta data yet")}</div>`; $("metaEmerging").innerHTML = ""; $("metaAsOf").textContent = ""; return; }
+  $("metaAsOf").textContent = `(updated ${ago(m.updated_at)} · ${Math.round(m.history_hours)}h of history)`;
+  $("meta").innerHTML = `<table><thead><tr><th>Meta</th><th class="num">Daily</th><th>Curve (d)</th><th class="num">Weekly</th><th>Curve (w)</th><th class="num">Monthly</th><th>Curve (m)</th><th>Hot names (24h)</th><th>Capital</th></tr></thead><tbody>${
+    m.metas.map((x) => `<tr><td><b>${esc(x.name)}</b><div class="sub">${esc(Object.keys(x.sources_24h || {}).join(" · "))}</div></td>
+      <td class="num">${esc(x.score_daily)}</td><td>${curvePill(x.curve_daily)}</td><td class="num">${esc(x.score_weekly)}</td><td>${curvePill(x.curve_weekly)}</td>
+      <td class="num">${esc(x.score_monthly)}</td><td>${curvePill(x.curve_monthly)}</td><td class="reason">${(x.top_tokens_24h || []).map(esc).join(", ")}</td>
+      <td class="sub">${[x.capital && x.capital.cg_mcap_change_24h != null ? "cat mcap " + Number(x.capital.cg_mcap_change_24h).toFixed(1) + "% 24h" : null,
+        x.capital && x.capital.llama_tvl_change_7d != null ? "TVL " + Number(x.capital.llama_tvl_change_7d).toFixed(1) + "% 7d" : null].filter(Boolean).join(" · ")}</td></tr>`).join("")
+  }</tbody></table>`;
+  const bad = Object.entries(m.workers || {}).filter(([, w]) => w.last_error);
+  $("metaEmerging").innerHTML = `<div class="sub"><b>Emerging, unclassified</b> (repeated names matching no meta — possible new metas): ${
+    (m.emerging || []).map((e) => `<span class="pill honey">${esc(e.word)} ×${e.hits_24h}</span>`).join(" ") || "none yet"}</div>` +
+    (bad.length ? `<div class="sub" style="margin-top:6px">Workers with errors: ${bad.map(([k, w]) => `<span class="pill bad">${esc(k)}</span> ${esc(w.last_error)}`).join(" · ")}</div>` : "");
+}
+
 async function refresh() {
   try {
     const r = await fetch("/api/hive", { cache: "no-store" });
@@ -217,6 +246,8 @@ async function refresh() {
     renderEvents(STATE.events);
     renderSetup(STATE.setup);
     renderScout(STATE.scout);
+    renderMeta(STATE.meta);
+    renderCohort(STATE.cohort);
     $("refreshed").textContent = "updated " + new Date().toLocaleTimeString();
   } catch (e) {
     $("refreshed").textContent = "Hive UI server unreachable — " + e.message;
