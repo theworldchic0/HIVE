@@ -1,0 +1,87 @@
+{
+  "timestamp_utc": "2026-09-27T16:09:02.049269+00:00",
+  "agents": [
+    {
+      "agent_id": "queen",
+      "display_name": "Queen Bee",
+      "role": "hive_supervisor_and_optimizer",
+      "status": "yellow",
+      "last_heartbeat_age_s": 1000000000.0,
+      "jobs_completed": 0,
+      "jobs_failed": 0,
+      "communication_failures": 0,
+      "last_error": null
+    },
+    {
+      "agent_id": "research_agent",
+      "display_name": "Research Bee",
+      "role": "phase1_token_research",
+      "status": "red",
+      "last_heartbeat_age_s": 1000000000.0,
+      "jobs_completed": 0,
+      "jobs_failed": 2,
+      "communication_failures": 2,
+      "last_error": ""
+    },
+    {
+      "agent_id": "narrative_agent",
+      "display_name": "Narrative / Meta Bee",
+      "role": "narrative_and_meta_tracking",
+      "status": "yellow",
+      "last_heartbeat_age_s": 1000000000.0,
+      "jobs_completed": 0,
+      "jobs_failed": 0,
+      "communication_failures": 0,
+      "last_error": null
+    },
+    {
+      "agent_id": "market_direction",
+      "display_name": "Market Direction Agent",
+      "role": "macro_context_provider",
+      "status": "yellow",
+      "last_heartbeat_age_s": 1000000000.0,
+      "jobs_completed": 0,
+      "jobs_failed": 0,
+      "communication_failures": 0,
+      "last_error": null
+    },
+    {
+      "agent_id": "bottom_blueprint_observatory",
+      "display_name": "Bottom Blueprint Observatory",
+      "role": "cycle_clock_accuracy_and_performance_recorder",
+      "status": "yellow",
+      "last_heartbeat_age_s": 1000000000.0,
+      "jobs_completed": 0,
+      "jobs_failed": 0,
+      "communication_failures": 0,
+      "last_error": null
+    }
+  ],
+  "usage": [
+    {
+      "agent_id": "research_agent",
+      "provider": "test",
+      "calls": 4,
+      "input_tokens": 200,
+      "output_tokens": 100,
+      "cache_hits": 2,
+      "failures": 0,
+      "avg_latency_ms": 0
+    }
+  ],
+  "open_recommendations": [
+    {
+      "severity": "medium",
+      "category": "communication",
+      "recommendation": "Inspect failed handoffs and requeue affected work.",
+      "evidence": {
+        "failed_handoffs_24h": 2
+      }
+    }
+  ],
+  "severity_basis": {
+    "high": "data-integrity risk, canonical Master List corruption risk, agent failure, repeated communication failure, contract identity risk, or research pipeline blocked",
+    "medium": "provider degradation, stale context, queue stall, repeated duplicate searches, high token/call waste, or source conflict that does not yet corrupt canonical data",
+    "low": "optimization opportunity, slow provider, low cache hit rate, noncritical UI/telemetry gap"
+  }
+}

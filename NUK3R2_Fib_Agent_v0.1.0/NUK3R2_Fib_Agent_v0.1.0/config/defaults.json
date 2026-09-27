@@ -1,0 +1,26 @@
+{
+  "version": "0.1.0",
+  "levels": [100.0, 82.6, 78.6, 61.8, 21.4, 17.4, 0.0],
+  "zone_metadata": {
+    "100-82.6": "NDCAZ",
+    "82.6-78.6": "NEZ",
+    "78.6-61.8": "REDLEG",
+    "61.8-21.4": "NUK3",
+    "21.4-17.4": "NSZ",
+    "17.4-0": "WASTELAND"
+  },
+  "anchor_methods": [
+    "wick_high",
+    "body_high",
+    "highest_accepted_close",
+    "body_high_excluding_extreme_wick"
+  ],
+  "learning": {
+    "minimum_observations_for_comparison": 30,
+    "automatic_method_change": false,
+    "require_human_approval": true
+  },
+  "watchlist": {
+    "start_statuses": ["WATCHLIST", "WATCH"]
+  }
+}

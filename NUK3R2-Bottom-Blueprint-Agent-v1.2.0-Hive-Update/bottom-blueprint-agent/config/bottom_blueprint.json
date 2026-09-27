@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.2.0",
+  "agent_id": "bottom_blueprint_observatory",
+  "cycle": {
+    "bottom_center": "2026-10-20",
+    "bottom_window_start": "2026-09-19",
+    "bottom_window_end": "2026-11-16",
+    "momentum_center": "2026-11-23",
+    "momentum_window_start": "2026-11-01",
+    "momentum_window_end": "2027-02-06"
+  },
+  "halving_date": "2024-04-20",
+  "bottom_center": "2026-10-20",
+  "bottom_window_start": "2026-09-19",
+  "bottom_window_end": "2026-11-16",
+  "momentum_center": "2026-11-23",
+  "momentum_window_start": "2026-11-01",
+  "momentum_window_end": "2027-02-06",
+  "fifth_halving_projected": "2028-04-05",
+  "accuracy_mode": "live_out_of_sample",
+  "performance_tracking": "research_timestamp_to_bull_cycle_end_or_fifth_halving_boundary",
+  "historical_integrity": "immutable_original_snapshot",
+  "future_auditor_separate": true,
+  "ui": {
+    "always_visible": true,
+    "style": "banner_or_status_card",
+    "fields": [
+      "window_state",
+      "window_day",
+      "window_total_days",
+      "days_to_center",
+      "momentum_state",
+      "actual_low_if_known",
+      "accuracy_status",
+      "tracked_candidate_count"
+    ]
+  }
+}

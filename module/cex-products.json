@@ -1,0 +1,8 @@
+{
+ "comment": "CEX product whitelist - which Coinbase products the engine may touch (typo/fat-finger protection, NOT anti-scam: Coinbase's listing process is the identity vetting on the exchange). The engine REFUSES any product not listed here - same law as the DEX registry. Add each product you actually intend to trade; the note field is yours (why you trade it, reminders). Ships with one example.",
+ "products": {
+  "BTC-USD": {
+   "note": "example row - replace with the products YOU trade"
+  }
+ }
+}

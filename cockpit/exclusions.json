@@ -1,0 +1,15 @@
+{
+  "_meta": {
+    "purpose": "SINGLE exclusion source for the Suggested Plays list generators (List A numeric momentum + List B thesis). Any generator MUST load this file and exclude: (1) every ticker in holdings, (2) every ticker in dollarTrue, (3) every contract in blacklist (PERMANENT \u2014 Jesse said never show again), (4) every contract in triaged (already decided \u2014 the YES / NOT-RIGHT-NOW / BUY views own them now; do not resurface).",
+    "maintainedBy": "dashboard-server.mjs \u2014 rebuilt from triage-decisions.jsonl on boot and on every POST /api/triage. Do NOT hand-edit (overwritten). To add a holding, edit TRIAGE_HOLDINGS in dashboard-server.mjs.",
+    "matchRule": "tickers match case-insensitively; contracts match case-insensitively on the full address/mint string"
+  },
+  "updated_utc": null,
+  "holdings": [],
+  "dollarTrue": [
+    "USDG",
+    "USDC"
+  ],
+  "blacklist": [],
+  "triaged": []
+}

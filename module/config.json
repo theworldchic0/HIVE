@@ -1,0 +1,56 @@
+{
+  "comment": "Execution module config. JSON files are actual code. Caps are HARD limits the module enforces before signing anything. maxUsdPerOrder: the $500 cap was REMOVED per Jesse 2026-07-23 (set effectively unlimited at 1000000); per-trade confirm + registry vetting remain the gates. Put a real number back here anytime to restore a cap - all three layers (trade-idea, arm.mjs, swap.mjs) read this one value.",
+  "apiBases": [
+    "https://api.1inch.com",
+    "https://api.1inch.dev"
+  ],
+  "chains": {
+    "base": {
+      "chainId": 8453,
+      "orderbookConfirmed": true,
+      "gtNetwork": "base",
+      "kyberSlug": "base",
+      "rpc": "https://mainnet.base.org",
+      "dollarTrueToken": "USDC",
+      "note": "Orderbook v4.0/8453 = HTTP 200 on both api bases (verified 2026-07-20). DOLLAR-TRUE taker/src on Base is REAL USDC (0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913), NOT USDG. Base tradable tokens must be added to registry.json with chainId 8453 after multi-source verification (DexScreener multi-pool volume + BaseScan) BEFORE any trade. rpc is REQUIRED here or arm.mjs/swap.mjs fall back to the Robinhood RPC."
+    },
+    "robinhood": {
+      "chainId": 4663,
+      "orderbookConfirmed": true,
+      "gtNetwork": "robinhood",
+      "kyberSlug": "robinhood",
+      "rpc": "https://rpc.mainnet.chain.robinhood.com",
+      "dollarTrueToken": "USDG",
+      "note": "Orderbook v4.0/4663 verified 200. DOLLAR-TRUE token on this chain is USDG (0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168) \u2014 there is NO canonical USDC on 4663 (symbol search returns scams)."
+    }
+  },
+  "limits": {
+    "maxUsdPerOrder": 1000000,
+    "maxOpenOrdersPerToken": 6,
+    "minExpiryMinutes": 30,
+    "maxExpiryDays": 365,
+    "defaultExpiryDays": 100
+  },
+  "safety": {
+    "requireRegistryMatch": true,
+    "requireExplicitConfirm": true,
+    "dryRunDefault": true
+  },
+  "cockpitTradesFile": "../cockpit/trades.js",
+  "registryFile": "./registry.json",
+  "ethSpend": {
+    "enabled": true,
+    "comment": "THE FLIP SWITCH (Jesse 2026-07-31): ETH (native or wrapped) may be the FUNDING leg of MARKET orders when stables are short. MARKET ORDERS ONLY - arm.mjs limit orders stay stable-funded because a token/ETH limit rate drifts in USD as ETH moves (Jesse's own reasoning). ETH is priced live via the chain's WETH pools with the poison-pair guard. gasReserveEth is never spendable when funding with native ETH (kept for gas).",
+    "gasTokens": {
+      "4663": {
+        "wrapped": "WETH",
+        "native": "ETH"
+      },
+      "8453": {
+        "wrapped": "WETH_BASE",
+        "native": "ETH_BASE"
+      }
+    },
+    "gasReserveEth": 0.0005
+  }
+}

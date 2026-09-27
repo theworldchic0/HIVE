@@ -1,0 +1,20 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"NUK3R2 Fib Structure",
+  "type":"object",
+  "required":["token","contract","chain","study_mode","bottom_anchor","wick_high","body_high","levels"],
+  "properties":{
+    "token":{"type":"string"},
+    "contract":{"type":"string"},
+    "chain":{"type":"string"},
+    "study_mode":{"enum":["mature","young"]},
+    "bottom_anchor":{"type":"number"},
+    "wick_high":{"type":"number"},
+    "body_high":{"type":"number"},
+    "selected_anchor_method":{"type":["string","null"]},
+    "selected_top_anchor":{"type":["number","null"]},
+    "selection_reason":{"type":["string","null"]},
+    "confidence":{"type":["string","null"]},
+    "levels":{"type":"object","additionalProperties":{"type":"number"}}
+  }
+}

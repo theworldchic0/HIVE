@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Execute Now</title>
+<!-- EXECUTE NOW — the dedicated paste-to-trade page (Jesse 2026-07-24: "make it its own
+     page... quick buy, execute now, something like that"). Born from
+     proposals/paste-box-redesign.md after the silent-vet incidents:
+       LAW 1: state is the truth; the DOM is a projection. paint() is idempotent,
+              derived only from state, and re-asserted on a heartbeat.
+       LAW 2: no result is ever painted into a node that a re-render can replace —
+              result areas are append-only and never rebuilt.
+       LAW 3: every client error is beaconed to /api/feedback (source client-error)
+              so "nothing happened" can always be diagnosed from a file.
+     Same gates as everywhere: vet-lite before anything (provisional $25/order cap,
+     full token-vetter lifts it), analyze → "So you want to do this?" → HIS press,
+     ARMED server + confirm token + caps enforced server-side. NOTHING auto-executes. -->
+<style>
+  :root{--bg:#0b0f14; --panel:#101820; --panel2:#0d141c; --line:#243244; --ink:#dce7f2; --ink2:#9fb2c5; --ink3:#6b7f93; --ok:#7ee2b0; --warn:#e8c96a; --bad:#f5a3ab; --blue:#8ab8f5}
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  header{display:flex; align-items:center; gap:14px; padding:14px 18px; border-bottom:1px solid var(--line); flex-wrap:wrap}
+  h1{font-size:17px; margin:0; letter-spacing:.04em}
+  nav{margin-left:auto; display:flex; gap:4px; border:1px solid var(--line); border-radius:10px; overflow:hidden}
+  nav a{padding:6px 14px; color:var(--ink2); text-decoration:none; font-size:13px}
+  nav a.on{background:var(--panel); color:var(--ink)}
+  main{max-width:1080px; margin:0 auto; padding:16px}
+  .intake{padding:14px; background:var(--panel2); border:1px solid #2f5d9e; border-radius:12px}
+  .intake h2{margin:0 0 4px; font-size:12px; letter-spacing:.08em; color:var(--blue); text-transform:uppercase}
+  .intake .sub{font-size:11.5px; color:var(--ink3); margin-bottom:10px}
+  .row{display:flex; gap:9px; align-items:center; margin:6px 0; flex-wrap:wrap}
+  input,textarea{background:var(--panel); border:1px solid var(--line); border-radius:8px; color:var(--ink); font:13px/1.45 ui-monospace,monospace; padding:8px 10px}
+  input:focus,textarea:focus{outline:none; border-color:#2f5d9e}
+  #pasteIn{flex:1; min-width:280px}
+  #tickIn{flex:0 0 92px; text-transform:uppercase; text-align:center; font-weight:700}
+  button{cursor:pointer; border-radius:8px; font-weight:700; border:1px solid var(--line); background:var(--panel); color:var(--ink); padding:7px 14px}
+  .vet{background:#14231a; border-color:#3f7d5d; color:var(--ok)}
+  .vet:hover{background:#1b3324}
+  .vet[disabled]{opacity:.55; cursor:default}
+  .go{background:#1e3a2a; border-color:#3f7d5d; color:#c8f5df}
+  .lad{background:#241d0e; border-color:#8a6d1f; color:var(--warn)}
+  .x{background:transparent; border-color:#6b2f38; color:var(--bad); padding:2px 9px; margin-left:auto}
+  .coin{margin-top:14px; padding:13px 15px; background:var(--panel); border:1px solid var(--line); border-radius:12px}
+  .coin.vetok{border-color:#2c5a3f}
+  .chead{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+  .tk{font-size:16px; font-weight:800}
+  .ca{font-size:11px; color:var(--ink3); font-family:ui-monospace,monospace}
+  .chip{font-size:11px; padding:1px 9px; border-radius:999px; border:1px solid var(--line); color:var(--ink2)}
+  .chip.ok{border-color:#3f7d5d; color:var(--ok); font-weight:800}
+  .chip.pend{border-color:#8a6d1f; color:var(--warn)}
+  .chip.bad{border-color:#6b2f38; color:var(--bad); font-weight:800}
+  /* 🟢🟡🔴 liquidity-risk badge + suggested size (LIQUIDITY-MATRIX-BUILD-SPEC Part 2) */
+  .riskbadge{display:inline-block; padding:1px 9px; border-radius:999px; font-size:11px; border:1px solid var(--line); cursor:pointer; white-space:nowrap}
+  .riskbadge.L1{border-color:#3f7d5d; color:var(--ok)}
+  .riskbadge.L2{border-color:#8a6d1f; color:var(--warn)}
+  .riskbadge.L3{border-color:#6b2f38; color:var(--bad)}
+  .riskbadge .est{opacity:.8; font-size:9px}
+  #riskPop{position:fixed; z-index:70; background:var(--panel); border:1px solid #4b5a6b; border-radius:10px; padding:10px 12px; font-size:11.5px; width:310px; display:none; box-shadow:0 8px 30px rgba(0,0,0,.5)}
+  #riskPop table{width:100%; border-collapse:collapse; margin:5px 0}
+  #riskPop td{padding:2px 4px; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums}
+  #riskPop tr.won td{color:var(--ink); font-weight:700}
+  #riskPop .muted{color:var(--ink3); font-size:10.5px}
+  #riskPop select{background:var(--panel2); border:1px solid var(--line); color:var(--ink); border-radius:6px; font:11px inherit; padding:2px 5px}
+  .sure .qoverride{margin-top:5px; color:var(--ink2); font-size:11.5px}
+  .controls{margin-top:10px; display:none}
+  .coin.vetok .controls{display:block}
+  .idea{flex:1; min-width:260px; resize:vertical; min-height:38px}
+  .qamt{width:76px}
+  .note{font-size:11px; color:var(--ink3)}
+  .res{margin-top:8px}
+  .res .step{margin:6px 0; padding:8px 11px; border:1px solid var(--line); border-radius:9px; font-size:12.5px}
+  .res .step.ok{border-color:#2c5a3f}
+  .res .step.warn{border-color:#8a6d1f; color:#f0dca0}
+  .sure{margin:8px 0; padding:11px 13px; background:#101b26; border:1px solid #2f5d9e; border-radius:10px}
+  .sure b.h{display:block; color:var(--blue); text-transform:uppercase; font-size:11px; letter-spacing:.06em; margin-bottom:5px}
+  .sure .leg{font-weight:700; margin:3px 0}
+  .sure .w{font-size:12px; color:#f0dca0; margin:2px 0}
+  .sure button{margin-top:8px; background:#1e3a2a; border-color:#3f7d5d; color:#c8f5df; font-size:13.5px; padding:7px 18px}
+  .bar{height:9px; background:var(--panel2); border:1px solid var(--line); border-radius:99px; overflow:hidden; margin:7px 0 3px}
+  .bar i{display:block; height:100%; width:0; background:linear-gradient(90deg,#2c5a3f,#7ee2b0); transition:width .4s}
+  .bar.bad i{background:linear-gradient(90deg,#6b2f38,#f5a3ab)}
+  .xsum{margin:7px 0; padding:9px 12px; background:#0e1a12; border:1px solid #2c5a3f; border-radius:9px; font-size:12.5px; line-height:1.65; color:#c8f5df; font-variant-numeric:tabular-nums}
+  .xsum div:first-child{font-weight:800; font-size:13px}
+  .empty{margin-top:26px; text-align:center; color:var(--ink3)}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚡ EXECUTE NOW</h1>
+  <span class="note">paste any coin → vet → trade · vet gate always applies · every order needs your press</span>
+  <nav>
+    <a href="/">Dashboard</a>
+    <a href="/suggested.html">Suggested Plays</a>
+    <a href="/suggested.html#buylist">Buy List</a>
+    <a class="on" href="/execute.html">Execute Now</a>
+  </nav>
+</header>
+<main>
+  <div class="intake">
+    <h2>New coin — paste &amp; vet</h2>
+    <div class="sub">contract address (0x…) or a GeckoTerminal pool link · your pasted coins persist on this page until you remove them</div>
+    <div class="row">
+      <input id="pasteIn" placeholder="0x… contract  —or—  https://www.geckoterminal.com/robinhood/pools/0x…">
+      <input id="tickIn" placeholder="ticker?">
+      <button class="vet" id="vetGo">🛡 VET &amp; UNLOCK</button>
+    </div>
+    <div id="intakeMsg" class="note"></div>
+  </div>
+  <div id="coins"></div>
+  <div class="empty" id="empty">Nothing here yet — paste a contract or GeckoTerminal link above.</div>
+</main>
+<script>
+"use strict";
+// ---------- LAW 3: client error beacon — silence is never undiagnosable again ----------
+function beacon(kind, msg){
+  try{ fetch("/api/feedback",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({context:"client-error execute.html", text:kind+": "+String(msg).slice(0,500)})}); }catch(_){}
+}
+window.addEventListener("error", e=>beacon("error", e.message+" @ "+e.filename+":"+e.lineno));
+window.addEventListener("unhandledrejection", e=>beacon("rejection", (e.reason&&e.reason.message)||e.reason));
+
+const esc = s => String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const key = c => String(c||"").toLowerCase();
+const $ = s => document.querySelector(s);
+const fmtUsd = n => n==null||isNaN(n) ? "—" : "$"+Number(n).toLocaleString("en-US",{maximumFractionDigits: Math.abs(n)>=1000?0:2});
+
+// ---------- 🟢🟡🔴 LIQUIDITY MATRIX badge (spec Part 2; ALL math server-side) ----------
+// This page stores no pool data, so each pasted coin's LIVE liquidity comes from one
+// DexScreener call (median-price poison filter, deepest sane pair) before sizing.
+const RISKS = new Map(); let risksCtx = null;
+async function liveLiq(c){
+  try{
+    const d = await (await fetch("https://api.dexscreener.com/latest/dex/tokens/"+c.contract)).json();
+    const ps=(d.pairs||[]).filter(x=>(x.baseToken?.address||"").toLowerCase()===key(c.contract));
+    const px=ps.map(x=>Number(x.priceUsd)).filter(v=>v>0).sort((a,b)=>a-b);
+    const med=px.length?px[Math.floor(px.length/2)]:0;
+    const sane=(px.length>=2&&med>0)?ps.filter(x=>{const v=Number(x.priceUsd);return v>0&&v/med<5&&v/med>0.2;}):ps;
+    const best=(sane.length?sane:ps).sort((a,b)=>((b.liquidity&&b.liquidity.usd)||0)-((a.liquidity&&a.liquidity.usd)||0))[0];
+    return best?.liquidity?.usd ?? null;
+  }catch(_){ return null; }
+}
+let riskBusy=false;
+async function refreshRiskBadges(){
+  if(riskBusy || !S.coins.length) return;
+  riskBusy=true;
+  try{
+    const items=[];
+    for(const c of S.coins){ const liq=await liveLiq(c); if(liq>0) items.push({contract:c.contract, ticker:c.ticker, chain:c.chain, poolUsd:liq}); }
+    if(!items.length) return;
+    const r = await fetch("/api/risk-matrix/size",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({items})});
+    if(!r.ok) return;                       // server predates the route → no badges, nothing breaks
+    const j = await r.json(); if(!j.ok) return;
+    risksCtx = j.context||null;
+    for(const x of (j.results||[])) if(x && x.contract && !x.error) RISKS.set(x.contract, x);
+    paintAll();
+  }catch(_){}
+  finally{ riskBusy=false; }
+}
+setInterval(()=>{ if(document.visibilityState==="visible") refreshRiskBadges(); }, 300000);
+window.riskPop = (ev, ck)=>{
+  ev.stopPropagation();
+  const x = RISKS.get(ck); if(!x) return;
+  let pop = document.getElementById("riskPop");
+  if(!pop){ pop=document.createElement("div"); pop.id="riskPop"; document.body.appendChild(pop);
+    document.addEventListener("click", e=>{ if(!pop.contains(e.target)) pop.style.display="none"; }); }
+  const f = v => v==null ? "—" : fmtUsd(Math.round(v*100)/100);
+  const rows=[
+    {k:"curve", n:`exposure curve (${x.curvePct.toFixed(4)}% of portfolio)`, v:x.caps.curveUsd},
+    {k:"pool", n:"pool impact cap", v:x.caps.poolUsd_cap},
+    {k:"blueprint", n:"blueprint (powder × CCM/3 × share)", v:x.caps.blueprintUsd}];
+  pop.innerHTML = `<b>$${esc(x.ticker||"")} — ${x.badge} L${x.L}${x.overridden?" (override)":""}</b>
+    <div class="muted">${x.overridden?"tier forced by override":`pool tier ${esc(x.poolTier||"?")} × depth ${esc(x.depthTier||"?")}`} · effective pool ${f(x.effectivePoolUsd)}</div>
+    <div class="muted">±2% depth ${f(x.depth.usd)} — ${x.depth.est?"ESTIMATED (2% of pool; not CG-listed)":"REAL, CoinGecko"}</div>
+    <table>${rows.map(r=>`<tr class="${x.won===r.k?"won":""}"><td>${r.n}${x.won===r.k?" ← wins":""}</td><td style="text-align:right">${f(r.v)}</td></tr>`).join("")}</table>
+    <div><b>suggested ${fmtUsd(x.suggestedDisplayUsd)}</b> <span class="muted">(min of the three, 2 sig figs)</span></div>
+    <div style="margin-top:6px">tier override:
+      <select id="rpOvr"><option value="">auto</option>
+        <option value="1" ${x.overridden&&x.L===1?"selected":""}>🟢 L1</option>
+        <option value="2" ${x.overridden&&x.L===2?"selected":""}>🟡 L2</option>
+        <option value="3" ${x.overridden&&x.L===3?"selected":""}>🔴 L3</option></select>
+      <span class="muted">writes risk-matrix.json + logs it</span></div>`;
+  pop.style.display="block";
+  pop.style.left = Math.min(ev.clientX, innerWidth-330)+"px";
+  pop.style.top = Math.min(ev.clientY+12, innerHeight-260)+"px";
+  pop.querySelector("#rpOvr").onchange = async (e)=>{
+    try{
+      const r = await fetch("/api/risk-matrix/override",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({contract:ck, ticker:x.ticker, L:e.target.value===""?null:Number(e.target.value)})});
+      const j = await r.json(); if(!j.ok) throw new Error(j.error||"override refused");
+      RISKS.clear(); await refreshRiskBadges(); pop.style.display="none";
+    }catch(err){ alert("override failed: "+err.message); }
+  };
+};
+
+// ---------- LAW 1: state is the truth ----------
+// coin: { ticker, contract, chain, vet: "none"|"pending"|"ok"|"bad", vetNote, reasons[] }
+const S = { coins: [] };
+
+async function saveCoins(){   // server-side persistence — refresh keeps the page
+  try{ await fetch("/api/exec-coins",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({coins:S.coins.map(c=>({ticker:c.ticker, contract:c.contract, chain:c.chain}))})}); }catch(_){}
+}
+
+// card DOM is built ONCE per coin; paint() only projects state onto it (idempotent);
+// the .res area is append-only and NEVER rebuilt (LAW 2).
+function cardEl(c){ return document.querySelector(`.coin[data-ck="${key(c.contract)}"]`); }
+function buildCard(c){
+  if(cardEl(c)) return;
+  const d = document.createElement("div");
+  d.className = "coin"; d.dataset.ck = key(c.contract);
+  d.innerHTML = `
+    <div class="chead">
+      <span class="tk">$${esc(c.ticker)}</span>
+      <span class="ca">${esc(c.contract)} · ${esc(c.chain)}</span>
+      <span class="chip" data-r="chip">…</span>
+      <span data-r="risk"></span>
+      <button class="x" title="remove from this page" data-r="rm">×</button>
+    </div>
+    <div class="vmsg note" data-r="vmsg"></div>
+    <div class="controls">
+      <div class="row">
+        <textarea class="idea" data-r="idea" rows="1" placeholder='your levels, e.g. "buy $30 at 0.002 and $50 at 0.0015" or "buy $20 at market"'></textarea>
+        <button class="go" data-r="run">⚡ Execute</button>
+      </div>
+      <div class="row">
+        <span class="note">quick buy $</span><input class="qamt" data-r="amt" type="number" min="1" value="25">
+        <button class="go" data-r="qb">QUICK BUY</button>
+        <button class="lad" data-r="lad">🪜 ladder</button>
+        <span class="note">every path previews first — your press on the confirm card is what fires</span>
+      </div>
+      <div class="res" data-r="res"></div>
+    </div>`;
+  $("#coins").prepend(d);
+  d.querySelector('[data-r="rm"]').onclick = ()=>{ S.coins = S.coins.filter(x=>key(x.contract)!==key(c.contract)); d.remove(); saveCoins(); paintAll(); };
+  d.querySelector('[data-r="run"]').onclick = ()=>runIdea(c, d.querySelector('[data-r="idea"]').value);
+  d.querySelector('[data-r="qb"]').onclick  = ()=>runIdea(c, "buy $"+(Math.max(1,Math.round(Number(d.querySelector('[data-r="amt"]').value)||25)))+" at market");
+  d.querySelector('[data-r="lad"]').onclick = async ()=>{ const pos=await waitPosition(c, x=>step(c,x,"warn")); if(pos) location.href="/?ladderKey="+encodeURIComponent(pos.key); };
+}
+function paint(c){
+  const d = cardEl(c); if(!d) return;
+  const chip = d.querySelector('[data-r="chip"]');
+  d.classList.toggle("vetok", c.vet==="ok");
+  if(c.vet==="ok"){ chip.className="chip ok"; chip.textContent="✓ VETTED"+(c.vetNote?" · "+c.vetNote:""); }
+  else if(c.vet==="pending"){ chip.className="chip pend"; chip.textContent="⏳ vetting… (~10-30s)"; }
+  else if(c.vet==="bad"){ chip.className="chip bad"; chip.textContent="✗ REFUSED"; }
+  else { chip.className="chip"; chip.textContent="not vetted"; }
+  d.querySelector('[data-r="vmsg"]').innerHTML = (c.reasons&&c.reasons.length)? c.reasons.map(r=>"• "+esc(r)).join("<br>") : "";
+  const rEl = d.querySelector('[data-r="risk"]'), rk = RISKS.get(key(c.contract));
+  if(rEl) rEl.innerHTML = rk ? `<span class="riskbadge L${rk.L}" onclick="riskPop(event,'${esc(key(c.contract))}')" title="liquidity-risk tier L${rk.L}${rk.overridden?" (override)":""} · click for the three caps + tier override">${rk.badge} suggested ${fmtUsd(rk.suggestedDisplayUsd)}${rk.depth&&rk.depth.est?`<span class="est"> est</span>`:""}</span>` : "";
+}
+function paintAll(){ for(const c of S.coins){ buildCard(c); paint(c); } $("#empty").style.display = S.coins.length?"none":"block"; }
+setInterval(paintAll, 3000);   // heartbeat: the projection re-asserts itself, always
+
+function step(c, html, cls){
+  const res = cardEl(c)?.querySelector('[data-r="res"]'); if(!res) return null;
+  const div = document.createElement("div"); div.className = "step "+(cls||""); div.innerHTML = html;
+  res.appendChild(div); div.scrollIntoView({block:"nearest"});
+  return div;
+}
+
+// ---------- vet (same gate as everywhere; provisional $25/order cap on CLEAR) ----------
+async function vetCoin(c){
+  c.vet="pending"; c.reasons=[]; paint(c);
+  try{
+    const r = await fetch("/api/vet-lite",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ticker:c.ticker, contract:c.contract, chain:c.chain})});
+    const v = await r.json();
+    if(v.verdict==="CLEAR"||v.verdict==="ALREADY"){
+      c.vet="ok"; c.vetNote = v.verdict==="CLEAR" ? "provisional, $25/order cap" : "";
+      c.reasons = (v.warnings||[]).map(w=>"⚠ "+w);
+    } else { c.vet="bad"; c.reasons = (v.reasons||["no reason returned"]).concat(["disagree? ask Claude to run the full token-vetter"]); }
+  }catch(e){ c.vet="bad"; c.reasons=["vet request failed: "+e.message, "server restarting? wait a few seconds and press the chip to re-vet"]; beacon("vet-fail", e.message); }
+  paint(c); saveCoins();
+}
+document.addEventListener("click", e=>{     // chip click = re-vet when not ok
+  const chip = e.target.closest('[data-r="chip"]'); if(!chip) return;
+  const d = e.target.closest(".coin"); const c = S.coins.find(x=>key(x.contract)===d.dataset.ck);
+  if(c && c.vet!=="ok" && c.vet!=="pending") vetCoin(c);
+});
+
+// ---------- intake: resolve contract/GT link → add coin → vet ----------
+$("#vetGo").onclick = async ()=>{
+  const btn=$("#vetGo"); if(btn.disabled) return;
+  btn.disabled=true; btn.textContent="⏳ VETTING…";
+  try{ await intake(); } finally { btn.disabled=false; btn.textContent="🛡 VET & UNLOCK"; }
+};
+async function intake(){
+  const raw = $("#pasteIn").value.trim(), tkIn = $("#tickIn").value.trim().toUpperCase();
+  const msg = t => $("#intakeMsg").textContent = t;
+  if(!raw) return msg("paste a contract address or a GeckoTerminal pool link first");
+  msg("resolving…");
+  let contract=null, chain=null, ticker=tkIn||null;
+  const gt = raw.match(/geckoterminal\.com\/([a-z0-9_-]+)\/pools\/([a-zA-Z0-9]+)/i);
+  if(gt){
+    const net = gt[1].toLowerCase();
+    const r = await (await fetch(`https://api.geckoterminal.com/api/v2/networks/${net}/pools/${gt[2]}?include=base_token`,{headers:{Accept:"application/json;version=20230302"}})).json();
+    const inc = (r.included||[]).find(x=>x.type==="token");
+    contract = (inc&&inc.attributes&&inc.attributes.address) || (r.data?.relationships?.base_token?.data?.id||"").split("_").pop();
+    ticker = ticker || (inc&&inc.attributes&&inc.attributes.symbol) || null;
+    chain = net==="robinhood"?"robinhood":net==="base"?"base":null;
+    if(!chain) return msg(`✖ network "${net}" — the engine trades Robinhood Chain and Base only`);
+  } else if(/^0x[0-9a-fA-F]{40}$/.test(raw)){
+    contract = raw;
+    const d = await (await fetch("https://api.dexscreener.com/latest/dex/tokens/"+contract)).json();
+    const ps=(d.pairs||[]), px=ps.map(x=>Number(x.priceUsd)).filter(v=>v>0).sort((a,b)=>a-b);
+    const med=px.length?px[Math.floor(px.length/2)]:0;
+    const sane=(px.length>=2&&med>0)?ps.filter(x=>{const v=Number(x.priceUsd);return v>0&&v/med<5&&v/med>0.2;}):ps;
+    const best=(sane.length?sane:ps).sort((a,b)=>((b.liquidity&&b.liquidity.usd)||0)-((a.liquidity&&a.liquidity.usd)||0))[0];
+    if(best){ chain=best.chainId==="robinhood"?"robinhood":best.chainId==="base"?"base":null; ticker=ticker||(best.baseToken&&best.baseToken.symbol)||null; }
+    if(!chain) return msg("✖ couldn't place this contract on Robinhood Chain or Base");
+  } else return msg("✖ that's neither a 0x contract nor a GeckoTerminal pool link");
+  if(!contract) return msg("✖ couldn't resolve the token contract");
+  if(!ticker) return msg("✖ couldn't auto-detect the ticker — type it in the small box and press again");
+  msg("");
+  let c = S.coins.find(x=>key(x.contract)===key(contract));
+  if(!c){ c={ticker, contract, chain, vet:"none", reasons:[]}; S.coins.unshift(c); saveCoins(); }
+  paintAll();
+  $("#pasteIn").value=""; $("#tickIn").value="";
+  await vetCoin(c);
+}
+
+// ---------- trade: the proven analyze → confirm → execute → truth-block flow ----------
+async function waitPosition(c, onwait){
+  for(let i=0;i<9;i++){
+    try{
+      const st = await (await fetch("/api/state"+(i?"?fresh="+i:""),{cache:"no-store"})).json();
+      const pos = (st.positions||[]).find(p=>p.contract && key(p.contract)===key(c.contract) && p.registryStatus==="AUTHORIZED" && !p.isDecoy);
+      if(pos) return pos;
+    }catch(_){}
+    if(i===0 && onwait) onwait("⏳ waiting for the position to appear in state (registry row is fresh)…");
+    await new Promise(r=>setTimeout(r, i?3000:1200));
+  }
+  if(onwait) onwait("✖ position not in state yet — wait a few seconds and try again");
+  return null;
+}
+async function runIdea(c, text){
+  text = String(text||"").trim();
+  if(c.vet!=="ok") return step(c,"vet first — press the chip","warn");
+  if(!text) return step(c,'type the order first — e.g. "buy $20 at market" or a multi-leg ladder',"warn");
+  const pos = await waitPosition(c, t=>step(c,t,"warn")); if(!pos) return;
+  step(c, "⏳ analyzing: "+esc(text)+"…");
+  let a;
+  try{
+    a = await (await fetch("/api/trade-idea/analyze",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({positionKey:pos.key, text, mode:"quick", context:{}})})).json();
+  }catch(e){ beacon("analyze-fail", e.message); return step(c,"✖ analyze failed: "+esc(e.message),"warn"); }
+  if(!a.ok) return step(c,"✖ "+esc(a.error||"analyze failed"),"warn");
+  const echoT=(a.position&&a.position.ticker)||a.ticker||"";
+  if(echoT.toUpperCase()!==c.ticker.toUpperCase()) return step(c,`✖ TOKEN MISMATCH — engine resolved ${esc(echoT)}, this card is $${esc(c.ticker)}. Nothing executed.`,"warn");
+  if(!a.ready) return step(c,"Can't build this trade — nothing executed:<br>✖ "+(a.blockers||["under-specified"]).map(esc).join("<br>✖ "),"warn");
+  // calm override line (spec 2c): typed size always wins; exceeding the suggestion = one calm sentence, never a block
+  let ovLine = "";
+  try{
+    const rk = RISKS.get(key(c.contract));
+    if(rk && rk.suggestedUsd>0){
+      const buyUsd = (a.legs||[]).filter(l=>l.side==="buy"&&l.usd!=null).reduce((s,l)=>s+Number(l.usd),0);
+      if(buyUsd > rk.suggestedUsd){
+        const ratio = buyUsd/rk.suggestedUsd;
+        ovLine = `<div class="qoverride">you're overriding the suggested ${fmtUsd(rk.suggestedDisplayUsd)} by ${ratio>=10?ratio.toFixed(0):ratio.toFixed(1)}x — your call, your button.</div>`;
+      }
+    }
+  }catch(_){}
+  const sure = step(c, `<div class="sure"><b class="h">So you want to do this?</b>`+
+    (a.humanSummary||[]).map(s=>`<div class="leg">${esc(s)}</div>`).join("")+
+    ovLine+
+    ((a.warnings||[]).length?(a.warnings||[]).map(w=>`<div class="w">⚠ ${esc(w)}</div>`).join(""):"")+
+    `<div class="rsSlot"></div>`+
+    `<button data-r="yes">${a.armed?"⚡ Yes — do it now (LIVE)":"▶ Yes — preview it (dry-run)"}</button></div>`);
+  // BEST-EXECUTION ROUTE SCAN (2026-07-31): real pool census + aggregator race, shown before
+  // the confirm button. Shared renderer, read-only, never gates execution.
+  try{ if(window.RouteScanUI) RouteScanUI.render(sure.querySelector(".rsSlot"), a); }catch(_){}
+  sure.querySelector('[data-r="yes"]').addEventListener("click", async (ev)=>{
+    ev.target.disabled = true;
+    const barStep = step(c, `<div class="bar"><i></i></div><span class="note">sending…</span>`);
+    const fill = barStep.querySelector(".bar i"), lbl = barStep.querySelector(".note"), bar = barStep.querySelector(".bar");
+    const poll = setInterval(async ()=>{
+      try{ const p = await (await fetch("/api/trade-idea/progress?token="+encodeURIComponent(a.confirmToken))).json();
+        if(p.ok && p.total){ fill.style.width=Math.round(100*p.done/p.total)+"%"; lbl.textContent=p.done+"/"+p.total+" legs"; } }catch(_){}
+    }, 700);
+    let x;
+    try{
+      const er = await fetch("/api/trade-idea/execute",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({confirmToken:a.confirmToken, dryRun:!a.armed})});
+      try{ x = await er.json(); }catch(_){ x={ok:false, error:"server refused (HTTP "+er.status+"). Nothing was placed."}; }
+    }catch(e){ x={ok:false, error:"execute request failed: "+e.message+" — check your orders before retrying."}; beacon("execute-fail", e.message); }
+    clearInterval(poll);
+    fill.style.width="100%"; if(!x.ok) bar.classList.add("bad");
+    lbl.textContent = x.ok ? "✓ COMPLETE" : "✖";
+    let h = `${x.live?"<b>LIVE</b>":"<b>DRY-RUN (preview only)</b>"} · ${esc(x.note||"")}`;
+    if(x.error) h += `<br>✖ ${esc(x.error)}`;
+    for(const r of (x.results||[])){
+      h += `<br><b>${esc((r.callType||r.side||"").toUpperCase())}</b> ${r.ok?"ok":"FAILED"}${r.orderHash?" "+esc(String(r.orderHash).slice(0,10))+"…":""}`;
+      if(!r.ok && r.fail_reason) h += `<br>✖ ${esc(r.fail_reason)}`;
+      if(r.ok && r.summary_lines) h += `<div class="xsum">${r.summary_lines.map(l=>`<div>${esc(l)}</div>`).join("")}</div>`;
+    }
+    step(c, h, x.ok?"ok":"warn");
+  }, {once:true});
+}
+
+// ---------- boot: restore persisted coins; vet chips derive from the registry ----------
+(async ()=>{
+  try{
+    const j = await (await fetch("/api/exec-coins",{cache:"no-store"})).json();
+    S.coins = (j.coins||[]).map(c=>({...c, vet:"none", reasons:[]}));
+  }catch(_){}
+  paintAll();
+  // registry truth → instant ✓ for already-vetted coins (no button press needed)
+  try{
+    const st = await (await fetch("/api/state")).json();
+    const reg = new Set((st.positions||[]).filter(p=>p.contract&&p.registryStatus==="AUTHORIZED"&&!p.isDecoy).map(p=>key(p.contract)));
+    for(const c of S.coins) if(reg.has(key(c.contract))){ c.vet="ok"; c.vetNote=""; }
+    paintAll();
+  }catch(_){}
+  refreshRiskBadges();
+})();
+</script>
+<script src="/route-scan-ui.js"></script>
+</body>
+</html>

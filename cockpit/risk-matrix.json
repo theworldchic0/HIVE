@@ -1,0 +1,68 @@
+{
+  "comment": "Jesse-blessed 2026-07-28. Tier = pool-size tier x depth tier (grid). Sizing = min(curve, poolCap, blueprint). All editable; the dashboard editor writes here.",
+  "poolTiersPctOfTVL": {
+    "smallBelow": 0.00002,
+    "largeAbove": 0.0002
+  },
+  "tvlSourceNote": "boundaries are FRACTIONS of total crypto TVL (DefiLlama) so they breathe with the cycle per MASTER-FORMULA.md Step 5a; cache TVL daily, fallback to last-known",
+  "depthSplitsUsd": {
+    "thinBelow": 15000,
+    "deepAbove": 100000
+  },
+  "depthEstimateRatio": 0.02,
+  "grid": {
+    "comment": "poolTier x depthTier -> L (3=high risk/red, 2=medium/yellow, 1=low/green). From NARRATIVE-AND-LIQUIDITY-V2.md",
+    "small": {
+      "thin": 3,
+      "medium": 3,
+      "deep": 2
+    },
+    "medium": {
+      "thin": 3,
+      "medium": 2,
+      "deep": 2
+    },
+    "large": {
+      "thin": 2,
+      "medium": 1,
+      "deep": 1
+    }
+  },
+  "exposureCurveAnchors": [
+    {
+      "poolUsd": 5000,
+      "maxPctOfPortfolio": 0.005
+    },
+    {
+      "poolUsd": 25000,
+      "maxPctOfPortfolio": 0.05
+    },
+    {
+      "poolUsd": 100000,
+      "maxPctOfPortfolio": 0.5
+    },
+    {
+      "poolUsd": 500000,
+      "maxPctOfPortfolio": 1.5
+    },
+    {
+      "poolUsd": 1400000,
+      "maxPctOfPortfolio": 3
+    },
+    {
+      "poolUsd": 5000000,
+      "maxPctOfPortfolio": 5
+    }
+  ],
+  "curveRules": "below first anchor: FLAT at 0.005%. Between anchors: LOG-LOG linear interpolation (interpolate ln(pct) against ln(pool)). Above last anchor: capped at 5%.",
+  "poolImpactCapPct": 4,
+  "blueprint": {
+    "gamma": 1,
+    "ccmDivisor": 3,
+    "ccmSource": "tools/market-direction/market-direction.json buy_size_multiplier (re-run tools/market-direction/refresh.js if older than 24h; keyless)"
+  },
+  "overrides": {
+    "tiers": {},
+    "note": "per-contract tier overrides Jesse sets from the card, e.g. {\"0xabc...\": 2}"
+  }
+}

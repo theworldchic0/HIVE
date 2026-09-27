@@ -1,0 +1,10 @@
+{
+  "schema_version":"1.1.0",
+  "agents":[
+    {"id":"queen","display_name":"Queen Bee","role":"hive_supervisor_and_optimizer"},
+    {"id":"research_agent","display_name":"Research Bee","role":"phase1_token_research"},
+    {"id":"narrative_agent","display_name":"Narrative / Meta Bee","role":"narrative_and_meta_tracking"},
+    {"id":"market_direction","display_name":"Market Direction Agent","role":"macro_context_provider"},
+    {"id":"bottom_blueprint_observatory","display_name":"Bottom Blueprint Observatory","role":"cycle_clock_accuracy_and_performance_recorder"}
+  ]
+}

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trade Cockpit — CoinPicks</title>
+<style>
+  :root{
+    --bg:#0b0f14; --panel:#11161d; --panel2:#161d26; --line:#232c37;
+    --ink:#e6edf3; --ink2:#9aa7b4; --ink3:#5d6a78;
+    --up:#10b981; --down:#ef4444;
+    --entry:#60a5fa; --tp:#34d399; --stop:#f87171; --warn:#fbbf24;
+    --good:#10b981; --bad:#ef4444;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{background:var(--bg); color:var(--ink); font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; padding:18px 18px 120px}
+  h1{font-size:18px; letter-spacing:.06em}
+  .sub{color:var(--ink3); font-size:12px; margin-top:2px}
+  header{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:14px}
+
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin-bottom:14px}
+  .stat{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:12px 14px}
+  .stat .k{font-size:11px; color:var(--ink2); text-transform:uppercase; letter-spacing:.08em}
+  .stat .v{font-size:22px; font-weight:650; margin-top:3px; font-variant-numeric:tabular-nums}
+  .stat .n{font-size:11px; color:var(--ink3); margin-top:2px}
+  .v.good{color:var(--good)} .v.bad{color:var(--bad)} .v.warn{color:var(--warn)}
+
+  .layout{display:grid; grid-template-columns:minmax(300px,360px) 1fr; gap:14px}
+  @media(max-width:980px){.layout{grid-template-columns:1fr}}
+  table{width:100%; border-collapse:collapse; font-size:13px}
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden}
+  .panel h2{font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink2); padding:10px 12px; border-bottom:1px solid var(--line)}
+  th{font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink3); text-align:left; padding:7px 10px; border-bottom:1px solid var(--line)}
+  td{padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top}
+  tr.trade{cursor:pointer}
+  tr.trade:hover{background:var(--panel2)}
+  tr.trade.sel{background:#1a2430}
+  .pill{display:inline-block; padding:1px 8px; border-radius:999px; font-size:11px; border:1px solid var(--line); color:var(--ink2)}
+  .pill.resting{border-color:#2f5d9e; color:#8ab8f5}
+  .pill.filled{border-color:#3f7d5d; color:#7ee2b0}
+  .pill.partial{border-color:#8a6d1f; color:#e8c96a}
+
+  .detail-head{display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:12px}
+  .detail-head .t{font-size:17px; font-weight:700}
+  .verify{margin:0 12px 10px; font-size:11.5px; color:var(--ink3)}
+  .verify code{color:var(--ink2)}
+  .tabs{display:flex; gap:6px; padding:0 12px 8px; align-items:center}
+  .tab{background:var(--panel2); border:1px solid var(--line); color:var(--ink2); border-radius:7px; padding:4px 12px; font-size:12px; cursor:pointer}
+  .tab.on{color:var(--ink); border-color:#4b5a6b; background:#1a2430}
+  .tf{background:var(--panel2); border:1px solid var(--line); color:var(--ink2); border-radius:7px; padding:3px 10px; font-size:12px; cursor:pointer}
+  .tf.on{color:var(--ink); border-color:#4b5a6b; background:#1a2430}
+  .legend{margin-left:auto; display:flex; gap:12px; font-size:11px; color:var(--ink2)}
+  .legend i{display:inline-block; width:14px; height:0; border-top:2px dashed; margin-right:4px; vertical-align:middle}
+  .legend .dot{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:4px; border:2px solid var(--bg); vertical-align:middle}
+  #chartwrap{position:relative; padding:0 12px 12px}
+  canvas{width:100%; height:360px; display:none; background:var(--panel2); border:1px solid var(--line); border-radius:8px}
+  #gtframe{width:100%; height:420px; border:1px solid var(--line); border-radius:8px; background:var(--panel2); display:block}
+  #tooltip{position:absolute; pointer-events:none; background:#0b1118ee; border:1px solid var(--line); border-radius:8px; padding:7px 9px; font-size:11.5px; color:var(--ink2); display:none; z-index:5; min-width:150px}
+  #tooltip b{color:var(--ink)}
+  .fills-note{padding:8px 12px 12px; font-size:11px; color:var(--ink3)}
+  .num{font-variant-numeric:tabular-nums}
+  .cost-pos{color:var(--bad)} .cost-neg{color:var(--good)}
+  .muted{color:var(--ink3)}
+
+  #feedback{position:fixed; right:16px; bottom:16px; width:290px; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:11px; box-shadow:0 8px 30px #0009; z-index:10}
+  #feedback h3{font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--warn); margin-bottom:6px}
+  #feedback textarea{width:100%; height:48px; background:var(--panel2); border:1px solid var(--line); border-radius:8px; color:var(--ink); font:12px/1.4 inherit; padding:7px; resize:vertical}
+  #feedback .row{display:flex; gap:8px; margin-top:7px; align-items:center}
+  #feedback button{background:#1a2430; border:1px solid #4b5a6b; color:var(--ink); border-radius:7px; padding:4px 11px; font-size:12px; cursor:pointer}
+  .copied{color:var(--good); font-size:11px}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>TRADE COCKPIT</h1>
+    <div class="sub" id="updated"></div>
+  </div>
+</header>
+
+<div class="stats" id="stats"></div>
+
+<div class="layout">
+  <div class="panel">
+    <h2>Positions</h2>
+    <table id="tradeTable">
+      <thead><tr><th>Token</th><th>Status</th><th>Value</th><th>Levels</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="panel" id="detail">
+    <div class="detail-head">
+      <span class="t" id="dTitle">—</span>
+      <span id="dChips"></span>
+    </div>
+    <div class="verify" id="dVerify"></div>
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-view="gt">GeckoTerminal</button>
+      <button class="tab" data-view="levels">Levels chart</button>
+      <span id="tfrow" style="display:none; gap:6px">
+        <button class="tf" data-tf="15m">15m</button>
+        <button class="tf on" data-tf="1h">1h</button>
+        <button class="tf" data-tf="4h">4h</button>
+        <button class="tf" data-tf="1d">1d</button>
+      </span>
+      <span id="liveStamp" class="muted" style="display:none; font-size:11px"></span>
+      <div class="legend" id="legend" style="display:none">
+        <span><i style="border-color:var(--entry)"></i>Entry</span>
+        <span><i style="border-color:var(--tp)"></i>TP</span>
+        <span><i style="border-color:var(--stop)"></i>Stop</span>
+        <span><span class="dot" style="background:var(--tp)"></span>Fill</span>
+      </div>
+    </div>
+    <div id="chartwrap">
+      <iframe id="gtframe" title="GeckoTerminal chart" frameborder="0" allow="clipboard-write" allowfullscreen></iframe>
+      <canvas id="chart"></canvas>
+      <div id="tooltip"></div>
+    </div>
+    <h2>Fills</h2>
+    <table id="fillTable">
+      <thead><tr><th>Level</th><th>Fill price</th><th>Qty</th><th>Convenience cost</th><th>Tx</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="fills-note" id="dNotes"></div>
+  </div>
+</div>
+
+<div id="feedback">
+  <h3>Why are we changing this?</h3>
+  <textarea id="fbText" placeholder="What's wrong / what should change, and why…"></textarea>
+  <div class="row">
+    <button id="fbCopy">Copy feedback</button>
+    <span id="fbMsg"></span>
+  </div>
+</div>
+
+<script src="trades.js"></script>
+<script>
+const D = window.COCKPIT_DATA;
+const $ = s => document.querySelector(s);
+const fmt = (n,d=4) => n==null ? "—" : Number(n).toLocaleString("en-US",{maximumFractionDigits:d});
+const fmtUsd = n => n==null ? "—" : (n<0?"-":"")+"$"+Math.abs(n).toLocaleString("en-US",{maximumFractionDigits:2});
+let sel = D.trades[0]?.id, VIEW="gt", TF="1h", candleCache={};
+
+function fillCost(f){
+  if(f.benchmarkPrice==null||f.fillPrice==null) return null;
+  const d = f.side==="buy" ? (f.fillPrice-f.benchmarkPrice) : (f.benchmarkPrice-f.fillPrice);
+  return d*f.qty + (f.gasUsd||0);
+}
+function tradeValueUsd(t){
+  // realized proceeds for sells + basis for holds — keep simple: show order/fill USD
+  let v=0;
+  for(const f of t.fills) v += f.fillPrice*f.qty*(f.side==="sell"?1:0);
+  if(!v && t.basis) v = t.basis.usd;
+  return v;
+}
+function computeStats(){
+  let filled=0, crossedMiss=0, cost=0, pnl=0, pnlKnown=false, open=0;
+  for(const t of D.trades){
+    for(const l of t.levels){
+      if(l.status==="filled"||l.status==="partial") filled++;
+      if(l.status==="expired_crossed") crossedMiss++;
+      if(l.status==="resting") open++;
+    }
+    let sold=0, soldQty=0;
+    for(const f of t.fills){
+      const c=fillCost(f); if(c!=null) cost+=c;
+      if(f.side==="sell"){ sold+=f.fillPrice*f.qty; soldQty+=f.qty; }
+    }
+    if(t.basis&&sold>0){ pnl += sold - soldQty*t.basis.price; pnlKnown=true; }
+  }
+  const denom=filled+crossedMiss;
+  const fr = denom? filled/denom*100 : null;
+  $("#stats").innerHTML = `
+    <div class="stat"><div class="k">Fill rate</div><div class="v ${fr==null?"":fr>=90?"good":"bad"}">${fr==null?"—":fr.toFixed(1)+"%"}</div><div class="n">gate: 90% · ${filled} filled / ${crossedMiss} crossed-no-fill</div></div>
+    <div class="stat"><div class="k">Realized P&L</div><div class="v ${pnl>0?"good":pnl<0?"bad":""}">${pnlKnown?fmtUsd(pnl):"—"}</div><div class="n">where entry basis is known</div></div>
+    <div class="stat"><div class="k">Convenience cost</div><div class="v ${cost>0?"warn":"good"}">${fmtUsd(cost)}</div><div class="n">total vs pool-mid benchmark</div></div>
+    <div class="stat"><div class="k">Open orders</div><div class="v">${open}</div><div class="n">resting on 1inch servers</div></div>`;
+}
+function statusPill(s){return `<span class="pill ${s}">${s.replace("_"," ")}</span>`}
+function renderList(){
+  $("#tradeTable tbody").innerHTML = D.trades.map(t=>`
+    <tr class="trade ${t.id===sel?"sel":""}" data-id="${t.id}" tabindex="0">
+      <td><b>$${t.ticker}</b></td>
+      <td>${statusPill(t.status)}</td>
+      <td class="num">${fmtUsd(tradeValueUsd(t))}</td>
+      <td class="num">${t.levels.length}</td>
+    </tr>`).join("");
+  document.querySelectorAll("tr.trade").forEach(r=>r.onclick=()=>{sel=r.dataset.id; renderList(); renderDetail();});
+}
+function renderDetail(){
+  const t=D.trades.find(x=>x.id===sel); if(!t) return;
+  const r=D.registry[t.ticker]||{};
+  $("#dTitle").textContent=`$${t.ticker} — ${t.side}`;
+  $("#dChips").innerHTML=statusPill(t.status);
+  const match = r.contract && r.contract.toLowerCase()===t.contract.toLowerCase();
+  $("#dVerify").innerHTML = match
+    ? `🔒 <code>${t.contract}</code> ✓ registry-pinned in signed order`
+    : `⚠ CONTRACT MISMATCH vs registry — DO NOT ARM`;
+  renderFills(t);
+  $("#dNotes").textContent = t.notes||"";
+  renderChartArea(t);
+}
+function renderFills(t){
+  const byId=Object.fromEntries(t.levels.map(l=>[l.id,l]));
+  $("#fillTable tbody").innerHTML = t.fills.map(f=>{
+    const c=fillCost(f);
+    return `<tr>
+      <td>${byId[f.levelId]?.label||f.levelId} <span class="muted">(${f.side})</span></td>
+      <td class="num">$${fmt(f.fillPrice, f.fillPrice<0.01?8:6)}</td>
+      <td class="num">${fmt(f.qty,2)}</td>
+      <td class="num ${c>0?"cost-pos":"cost-neg"}">${c==null?"—":fmtUsd(c)}</td>
+      <td class="muted">${f.txHash?f.txHash.slice(0,12)+"…":"—"}</td>
+    </tr>`;}).join("") || `<tr><td colspan="5" class="muted">no fills yet</td></tr>`;
+}
+
+// ---------- chart area: GT embed (default) or levels canvas ----------
+function renderChartArea(t){
+  const r=D.registry[t.ticker]||{};
+  if(VIEW==="gt"){
+    $("#gtframe").style.display="block"; $("#chart").style.display="none";
+    $("#tfrow").style.display="none"; $("#legend").style.display="none";
+    if(r.pool) $("#gtframe").src=`https://www.geckoterminal.com/${r.gtNetwork}/pools/${r.pool}?embed=1&info=0&swaps=0`;
+  } else {
+    $("#gtframe").style.display="none"; $("#chart").style.display="block";
+    $("#tfrow").style.display="inline-flex"; $("#legend").style.display="flex";
+    drawChart(t);
+  }
+}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); VIEW=b.dataset.view;
+  renderChartArea(D.trades.find(x=>x.id===sel));
+});
+
+const TFMAP={"15m":["minute",15],"1h":["hour",1],"4h":["hour",4],"1d":["day",1]};
+let lastChartFetch=0;
+async function getCandles(t,force){
+  const r=D.registry[t.ticker];
+  if(!r?.pool) return null;
+  const key=t.id+TF;
+  if(!force && candleCache[key]) return candleCache[key];
+  const [tf,agg]=TFMAP[TF];
+  const res=await fetch(`https://api.geckoterminal.com/api/v2/networks/${r.gtNetwork}/pools/${r.pool}/ohlcv/${tf}?aggregate=${agg}&limit=300&currency=usd`,{headers:{Accept:"application/json;version=20230302"}});
+  if(!res.ok) throw new Error("GT "+res.status);
+  const list=((await res.json()).data.attributes.ohlcv_list||[]).slice().sort((a,b)=>a[0]-b[0]);
+  candleCache[key]=list;
+  lastChartFetch=Date.now();
+  return list;
+}
+// LIVE MODE — while the Levels tab is visible, refresh candles every 20s (3 calls/min, well under GT's limit)
+setInterval(async()=>{
+  if(VIEW!=="levels") return;
+  const t=D.trades.find(x=>x.id===sel); if(!t) return;
+  try{ await getCandles(t,true); await drawChart(t); }catch(e){}
+},20000);
+setInterval(()=>{
+  const el=$("#liveStamp"); if(VIEW!=="levels"){el.style.display="none";return;}
+  el.style.display="inline";
+  el.textContent = lastChartFetch? `● live · updated ${Math.round((Date.now()-lastChartFetch)/1000)}s ago` : "loading…";
+},1000);
+let chartState=null;
+async function drawChart(t){
+  const cv=$("#chart"), ctx=cv.getContext("2d");
+  const W=cv.clientWidth, H=cv.clientHeight, dpr=window.devicePixelRatio||1;
+  cv.width=W*dpr; cv.height=H*dpr; ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,W,H);
+  let candles=null, err=null;
+  try{ candles=await getCandles(t); }catch(e){ err=e.message; }
+  if(!candles||!candles.length){ ctx.fillStyle="#5d6a78"; ctx.font="13px sans-serif"; ctx.fillText(err?("chart error: "+err):"no chart source", 20, 40); chartState=null; return; }
+  const padL=8,padR=64,padT=12,padB=22;
+  const xs=candles.map(c=>c[0]);
+  const lp=t.levels.filter(l=>l.price!=null).map(l=>l.price);
+  let lo=Math.min(...candles.map(c=>c[3]),...(lp.length?lp:[Infinity]));
+  let hi=Math.max(...candles.map(c=>c[2]),...(lp.length?lp:[-Infinity]));
+  const pad=(hi-lo)*0.07||hi*0.05; lo-=pad; hi+=pad;
+  const x=ts=>padL+((ts-xs[0])/(xs[xs.length-1]-xs[0]||1))*(W-padL-padR);
+  const y=p=>padT+(1-(p-lo)/(hi-lo))*(H-padT-padB);
+  ctx.strokeStyle="rgba(255,255,255,.05)"; ctx.fillStyle="#5d6a78"; ctx.font="10px sans-serif";
+  for(let i=0;i<=4;i++){const p=lo+(hi-lo)*i/4,yy=y(p);ctx.beginPath();ctx.moveTo(padL,yy);ctx.lineTo(W-padR,yy);ctx.stroke();ctx.textAlign="left";ctx.fillText(fmt(p,p<0.01?7:4),W-padR+6,yy+3);}
+  ctx.textAlign="center";
+  for(let i=0;i<5;i++){const idx=Math.floor(i*(candles.length-1)/4);ctx.fillText(new Date(candles[idx][0]*1000).toISOString().slice(5,10),x(candles[idx][0]),H-7);}
+  const cw=Math.max(1.5,(W-padL-padR)/candles.length*0.62);
+  for(const c of candles){
+    const [ts,o,h,l,cl]=c, col=cl>=o?"#10b981":"#ef4444", cx=x(ts);
+    ctx.strokeStyle=col; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(cx,y(h)); ctx.lineTo(cx,y(l)); ctx.stroke();
+    ctx.fillStyle=col; const yo=y(o),yc=y(cl);
+    ctx.fillRect(cx-cw/2,Math.min(yo,yc),cw,Math.max(1,Math.abs(yc-yo)));
+  }
+  const LC={entry:"#60a5fa",tp:"#34d399",stop:"#f87171"};
+  for(const l of t.levels){
+    if(l.price==null) continue;
+    const done = l.status==="filled"||l.status==="partial";
+    const yy=y(l.price), col=LC[l.kind]||"#9aa7b4";
+    ctx.globalAlpha = done? 0.45 : 1;
+    ctx.strokeStyle=col; ctx.setLineDash(done?[]:[6,4]); ctx.lineWidth= done?1 :1.4;
+    ctx.beginPath(); ctx.moveTo(padL,yy); ctx.lineTo(W-padR,yy); ctx.stroke(); ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+    const label=`${l.label} ${done?"✓ filled":"⧗ resting"} ${fmt(l.price,l.price<0.01?7:4)}`;
+    const tw=ctx.measureText(label).width+10, tx=W-padR-tw-6;
+    ctx.fillStyle="#0b0f14"; ctx.fillRect(tx,yy-9,tw,14); ctx.strokeStyle=col; ctx.globalAlpha=done?0.6:1; ctx.strokeRect(tx,yy-9,tw,14); ctx.globalAlpha=1;
+    ctx.fillStyle= done? "#9aa7b4" : "#e6edf3"; ctx.textAlign="left"; ctx.fillText(label,tx+5,yy+2);
+  }
+  for(const f of t.fills){
+    const l=t.levels.find(z=>z.id===f.levelId);
+    ctx.beginPath(); ctx.arc(x(f.time),y(f.fillPrice),5,0,7);
+    ctx.fillStyle=LC[l?.kind]||"#9aa7b4"; ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle="#0b0f14"; ctx.stroke();
+  }
+  chartState={candles,x,t};
+}
+$("#chart").addEventListener("mousemove",e=>{
+  if(!chartState){$("#tooltip").style.display="none";return;}
+  const {candles,x,t}=chartState, rect=e.target.getBoundingClientRect();
+  const mx=e.clientX-rect.left;
+  let best=null,bd=1e9;
+  for(const c of candles){const d=Math.abs(x(c[0])-mx); if(d<bd){bd=d;best=c;}}
+  if(!best){$("#tooltip").style.display="none";return;}
+  let fillInfo="";
+  for(const f of t.fills){ if(Math.abs(x(f.time)-mx)<8){
+    const c=fillCost(f);
+    fillInfo=`<hr style="border-color:#232c37;margin:4px 0"><b>FILL</b> $${fmt(f.fillPrice,8)} × ${fmt(f.qty,0)}${c!=null?"<br>cost "+fmtUsd(c):""}`;}}
+  const tt=$("#tooltip");
+  tt.innerHTML=`<b>${new Date(best[0]*1000).toISOString().slice(0,16).replace("T"," ")}Z</b><br>O ${fmt(best[1],8)} H ${fmt(best[2],8)}<br>L ${fmt(best[3],8)} C <b>${fmt(best[4],8)}</b>${fillInfo}`;
+  tt.style.display="block";
+  tt.style.left=Math.min(mx+14, e.target.clientWidth-170)+"px"; tt.style.top="14px";
+});
+$("#chart").addEventListener("mouseleave",()=>$("#tooltip").style.display="none");
+document.querySelectorAll(".tf").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".tf").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); TF=b.dataset.tf;
+  drawChart(D.trades.find(x=>x.id===sel));
+});
+
+$("#fbCopy").onclick=async()=>{
+  const txt=$("#fbText").value.trim(); if(!txt) return;
+  const formatted=`COCKPIT FEEDBACK (${new Date().toISOString()}) [trade: ${sel}] why-are-we-changing-this: ${txt}`;
+  try{ await navigator.clipboard.writeText(formatted); $("#fbMsg").innerHTML='<span class="copied">copied — paste to Claude</span>'; }
+  catch(e){ $("#fbMsg").textContent="copy failed"; }
+  $("#fbText").value="";
+  setTimeout(()=>$("#fbMsg").textContent="",4000);
+};
+
+$("#updated").textContent="live positions · data updated "+D.updated+" · written by robinhood-dex-trade-executor";
+window.addEventListener("resize",()=>{ if(VIEW==="levels") drawChart(D.trades.find(x=>x.id===sel)); });
+computeStats(); renderList(); renderDetail();
+</script>
+</body>
+</html>

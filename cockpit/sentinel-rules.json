@@ -1,0 +1,21 @@
+{
+  "comment": "MOONBAG SENTINEL standing rules. Each rule pre-authorizes ONE shape of automatic action: when a RESTING LIMIT BUY for (token, wallet) fills, place take-profit SELLS on the newly filled tokens at the listed levels. The sentinel can ONLY sell, ONLY per these rules, ONLY while the server is ARMED; arm.mjs independently re-enforces registry + the config per-order cap. Anything outside a rule = notify-only, never a trade. SHIPS EMPTY - rules are created from the Ladder Designer's confirm press, or by hand from the example below.",
+  "exampleRule_doNotEnable": {
+    "id": "your-token-ladder-tps-YYYY-MM-DD",
+    "token": "YOURTOKEN",
+    "wallet": "trading-wallet",
+    "chain": "robinhood",
+    "watch": "resting-limit-buys",
+    "createdAfter": "2026-01-01T00:00:00Z",
+    "approvedBy": "you, via the Ladder Designer confirm press",
+    "tpLevels": [
+      {
+        "price": 0.0,
+        "fracOfFill": 0.2
+      }
+    ],
+    "expiryHours": 2400,
+    "enabled": false
+  },
+  "rules": []
+}

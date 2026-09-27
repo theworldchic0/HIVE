@@ -1,0 +1,17 @@
+agent_id: market_direction
+schema_version: 1.1.0
+cadence:
+  scheduled: weekly
+  trigger_refresh:
+    - material_macro_event
+    - major_policy_change
+    - major_market_regime_change
+    - stale_snapshot_for_research_request
+  cached_context_ttl_hours: 168
+handoff:
+  research_agent: latest_snapshot_on_request
+  narrative_agent: read_only_context
+  bottom_blueprint_agent: read_only_context
+principle: "Macro is context, not a trade signal. Research should reuse the latest valid snapshot rather than rerun macro research for every token."
+outputs:
+  required: [market_regime, btc_context, macro_liquidity_context, risk_context, timestamp, snapshot_id, freshness]

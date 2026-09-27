@@ -1,0 +1,19 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"NUK3R2 Fib Reaction Event",
+  "type":"object",
+  "required":["token","timestamp","anchor_method","target_level","price","event_type"],
+  "properties":{
+    "token":{"type":"string"},
+    "timestamp":{"type":"string"},
+    "anchor_method":{"type":"string"},
+    "target_level":{"type":"number"},
+    "price":{"type":"number"},
+    "event_type":{"enum":["touch","rejection","hold","close_below","breakdown","reclaim","recovery"]},
+    "volume_context":{"type":["object","null"]},
+    "liquidity_context":{"type":["object","null"]},
+    "market_context":{"type":["object","null"]},
+    "narrative_context":{"type":["object","null"]},
+    "notes":{"type":["string","null"]}
+  }
+}

@@ -1,0 +1,17 @@
+2026-07-31
+─────────────────────────────────────────────────────────────────────────────
+THE VERSION IS THE DATE ON LINE 1. That is the whole scheme.
+
+- The zip you download is named  Altcoin-Trading-System-<date>.zip  and this
+  file inside it carries the same date. If they match, you know what you have.
+- "Which build am I on?" →  node module/doctor.mjs  prints it on line 2.
+- A newer date supersedes an older one, always. Nothing else to decode.
+- To upgrade WITHOUT losing your keys/wallet/registry: read UPGRADING.md.
+
+WHY OLD LABELS LOOKED CONFUSING (history, so nobody has to wonder again):
+early releases used sequence labels that got tangled — v1 (2026-07-22),
+v2 (2026-07-23), v3 + v4 + v5 (all 2026-07-24), v3.1 + v5.1 + v5.2
+(2026-07-26). If your install says v-anything, it is OLDER than this build.
+Date-first naming started 2026-07-31 and is permanent. If two zips ever carry
+the same date, the newer download wins; the CHANGELOG's top entry is the
+tiebreaker for what's inside.

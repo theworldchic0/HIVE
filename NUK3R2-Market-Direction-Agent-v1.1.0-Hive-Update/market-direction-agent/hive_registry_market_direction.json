@@ -1,0 +1,14 @@
+{
+  "hive_version": "2.4.0",
+  "agents": {
+    "market_direction": {
+      "display_name": "Market Direction Bee",
+      "status": "independent",
+      "role": "macro_context_provider",
+      "cadence": {"full": "weekly", "health": "daily", "event": "triggered"},
+      "shared_context": "shared_context/market_direction/latest.json",
+      "consumers": ["research_agent", "narrative_agent", "position_manager"],
+      "authoritative_engine": "existing Market Direction Bot"
+    }
+  }
+}
