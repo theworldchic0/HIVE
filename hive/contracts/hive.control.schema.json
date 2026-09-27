@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "hive.control — operational commands between agents (pause/resume/rescan)",
+  "type": "object",
+  "required": ["target_agent", "command", "requested_by"],
+  "properties": {
+    "target_agent": {"type": "string"},
+    "command": {"enum": ["pause", "resume", "rescan", "disarm"]},
+    "requested_by": {"type": "string"},
+    "reason": {"type": ["string", "null"]}
+  }
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "asset_id": "base:0x1111111111111111111111111111111111111111",
+    "chain": "base",
+    "contract": "0x1111111111111111111111111111111111111111",
+    "symbol": "EXAMPLE",
+    "name": "Example Token (format illustration, not a real token)",
+    "researched_at": "2026-09-27T18:00:00Z",
+    "snapshot_id": "RB-2026-09-27-EXAMPLE",
+    "identity": {
+      "status": "VERIFIED",
+      "sources": ["dexscreener", "basescan", "geckoterminal"],
+      "canonical_pool": "0x2222222222222222222222222222222222222222",
+      "gt_network": "base",
+      "decoys": ["0x3333333333333333333333333333333333333333"]
+    },
+    "gate": {"result": "PASS", "score": 21},
+    "rank": "BUY",
+    "confidence": "high",
+    "discovery": true,
+    "scores": {"core_quality": 47, "timing": 17, "narrative_power": 10},
+    "security": {"score": 86, "source": "goplus+manual", "flags": []},
+    "liquidity_usd": 640000,
+    "archetype": "Toll-Taker",
+    "narrative_stage": "early_rising",
+    "market_direction_snapshot_id": null,
+    "blueprint_snapshot_id": "BB-2026-09-24-001",
+    "notes": "Every field that could not be verified is null or omitted — never guessed."
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "trader.* — Trader Bee → Hive (Queen, UI, Observatory)",
+  "description": "Every Trader Bee decision is published: intent created, gated (rejected / needs approval), executed, failed, paused. Paper and live are both published; 'mode' says which.",
+  "type": "object",
+  "required": ["intent_id", "asset_id", "symbol", "strategy", "mode", "state"],
+  "properties": {
+    "intent_id": {"type": "string"},
+    "asset_id": {"type": "string"},
+    "symbol": {"type": "string"},
+    "strategy": {"enum": ["discovery_tier", "zone_entry", "take_profit", "manual", "manual_sell"]},
+    "tier": {"type": ["string", "null"]},
+    "usd": {"type": ["number", "null"]},
+    "mode": {"enum": ["paper", "live"]},
+    "state": {"type": "string"},
+    "reason": {"type": ["string", "null"]},
+    "tx_hash": {"type": ["string", "null"]},
+    "venue": {"type": ["string", "null"]}
+  }
+}

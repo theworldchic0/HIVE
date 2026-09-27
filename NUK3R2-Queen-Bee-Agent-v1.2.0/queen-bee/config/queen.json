@@ -1,16 +1,70 @@
 {
-  "schema_version":"1.2.0",
-  "agent_id":"queen",
-  "display_name":"Queen Bee",
-  "human_role":"beekeeper",
-  "heartbeat_seconds":60,
-  "health_thresholds":{"green_max_age_seconds":300,"yellow_max_age_seconds":900,"communication_error_threshold":1,"failure_threshold":1,"queue_stall_seconds":900,"research_duplicate_window_hours":24,"weekly_optimization_day":"sunday","weekly_optimization_window_days":7,"approval_required_for_changes":true,"learning_research_min_sources":3},
-  "severity_basis":{
-    "high":"data-integrity risk, canonical Master List corruption risk, agent failure, repeated communication failure, contract identity risk, or research pipeline blocked",
-    "medium":"provider degradation, stale context, queue stall, repeated duplicate searches, high token/call waste, or source conflict that does not yet corrupt canonical data",
-    "low":"optimization opportunity, slow provider, low cache hit rate, noncritical UI/telemetry gap"
+  "schema_version": "1.2.0",
+  "agent_id": "queen",
+  "display_name": "Queen Bee",
+  "human_role": "beekeeper",
+  "heartbeat_seconds": 60,
+  "health_thresholds": {
+    "green_max_age_seconds": 300,
+    "yellow_max_age_seconds": 900,
+    "communication_error_threshold": 1,
+    "failure_threshold": 1,
+    "queue_stall_seconds": 900,
+    "research_duplicate_window_hours": 24,
+    "weekly_optimization_day": "sunday",
+    "weekly_optimization_window_days": 7,
+    "approval_required_for_changes": true,
+    "learning_research_min_sources": 3
   },
-  "optimization_targets":{"minimize_duplicate_searches":true,"prefer_cached_context":true,"prefer_primary_sources":true,"prefer_keyless_or_free_sources_when_equivalent":true,"reuse_master_list":true,"reuse_market_direction_cache":true,"reuse_bottom_blueprint_snapshot":true,"batch_independent_provider_calls":true,"learn_source_reliability":true,"learn_search_efficiency":true,"learn_claude_code_architecture":true,"learn_agent_orchestration":true,"learn_context_and_token_optimization":true,"learn_mcp_and_hooks":true,"learn_testing_and_observability":true},
-  "safe_actions":["retry_failed_provider_call","mark_agent_degraded","pause_duplicate_queue_item","request_cached_context","requeue_failed_handoff","emit_optimization_recommendation","record_source_quality_observation","record_weekly_system_review","create_change_proposal","compare_before_after_metrics"],
-  "prohibited_actions":["place_trade","auto_buy","auto_sell","move_funds","change_user_strategy_without_beekeeper_approval","silently_change_source_weights","rewrite_historical_research","apply_optimization_change_without_approval","change_strategy_without_beekeeper_approval","change_source_priority_without_beekeeper_approval","change_agent_contract_without_beekeeper_approval","delete_telemetry_or_learning_history"]
+  "severity_basis": {
+    "high": "data-integrity risk, canonical Master List corruption risk, agent failure, repeated communication failure, contract identity risk, or research pipeline blocked",
+    "medium": "provider degradation, stale context, queue stall, repeated duplicate searches, high token/call waste, or source conflict that does not yet corrupt canonical data",
+    "low": "optimization opportunity, slow provider, low cache hit rate, noncritical UI/telemetry gap"
+  },
+  "optimization_targets": {
+    "minimize_duplicate_searches": true,
+    "prefer_cached_context": true,
+    "prefer_primary_sources": true,
+    "prefer_keyless_or_free_sources_when_equivalent": true,
+    "reuse_master_list": true,
+    "reuse_market_direction_cache": true,
+    "reuse_bottom_blueprint_snapshot": true,
+    "batch_independent_provider_calls": true,
+    "learn_source_reliability": true,
+    "learn_search_efficiency": true,
+    "learn_claude_code_architecture": true,
+    "learn_agent_orchestration": true,
+    "learn_context_and_token_optimization": true,
+    "learn_mcp_and_hooks": true,
+    "learn_testing_and_observability": true
+  },
+  "safe_actions": [
+    "retry_failed_provider_call",
+    "mark_agent_degraded",
+    "pause_duplicate_queue_item",
+    "request_cached_context",
+    "requeue_failed_handoff",
+    "emit_optimization_recommendation",
+    "record_source_quality_observation",
+    "record_weekly_system_review",
+    "create_change_proposal",
+    "compare_before_after_metrics",
+    "pause_trader_bee",
+    "disarm_trader_bee"
+  ],
+  "prohibited_actions": [
+    "place_trade",
+    "auto_buy",
+    "auto_sell",
+    "move_funds",
+    "change_user_strategy_without_beekeeper_approval",
+    "silently_change_source_weights",
+    "rewrite_historical_research",
+    "apply_optimization_change_without_approval",
+    "change_strategy_without_beekeeper_approval",
+    "change_source_priority_without_beekeeper_approval",
+    "change_agent_contract_without_beekeeper_approval",
+    "delete_telemetry_or_learning_history"
+  ],
+  "prohibited_actions_scope": "These prohibitions bind the Queen itself. Trading authority lives ONLY in the Trader Bee, bounded by its beekeeper-owned config and the human-made arm file. The Queen may pause or disarm the Trader Bee (safe direction, via a hive.control event) but can never arm it, resume a circuit-breaker pause without the beekeeper, or raise its budgets."
 }

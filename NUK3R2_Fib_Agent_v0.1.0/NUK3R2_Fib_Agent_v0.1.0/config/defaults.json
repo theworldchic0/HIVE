@@ -1,6 +1,14 @@
 {
-  "version": "0.1.0",
-  "levels": [100.0, 82.6, 78.6, 61.8, 21.4, 17.4, 0.0],
+  "version": "0.2.0",
+  "levels": [
+    100.0,
+    82.6,
+    78.6,
+    61.8,
+    21.4,
+    17.4,
+    0.0
+  ],
   "zone_metadata": {
     "100-82.6": "NDCAZ",
     "82.6-78.6": "NEZ",
@@ -21,6 +29,36 @@
     "require_human_approval": true
   },
   "watchlist": {
-    "start_statuses": ["WATCHLIST", "WATCH"]
+    "start_statuses": [
+      "BUY",
+      "WATCH",
+      "WATCHLIST"
+    ],
+    "require_gate_pass": true
+  },
+  "buy_zone": {
+    "zones": [
+      "NEZ",
+      "NDCAZ"
+    ],
+    "anchor_rule": "both_structures",
+    "comment": "BEEKEEPER SETTING. Default NUK3R2 buy zone = NEZ (82.6-78.6) + NDCAZ (100-82.6), i.e. price has retraced at least 78.6% of the ATL->structural-high move but has NOT broken the 100% bottom. anchor_rule both_structures = price must be inside the buy zone on BOTH the Wick-High and the Body-High structure (the stricter of the two). Change only with beekeeper approval."
+  },
+  "structure_rules": {
+    "version": "0.2.0",
+    "bottom": "lowest low (ATL) in the study window",
+    "top": "highest high (wick) and highest max(open,close) (body) AFTER the ATL candle",
+    "min_expansion_multiple": 2.0,
+    "min_candles_after_bottom": 3,
+    "young_token_days": 90,
+    "min_candles": 14,
+    "suspicious_wick_extension_pct": 50.0,
+    "comment": "Explicit, deterministic anchor rules so the zone watcher can run unattended. Anything that fails them is NEEDS_REVIEW or DATA_ERROR and can never trigger a buy. A new ATL breaks the structure (BROKEN) and re-anchors on the next scan; a new high after the ATL re-anchors the top. Every re-anchor gets a new structure_id."
+  },
+  "watcher": {
+    "candle_timeframe": "day",
+    "candle_limit": 1000,
+    "candle_ttl_hours": 6,
+    "interval_seconds": 900
   }
 }

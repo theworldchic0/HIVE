@@ -1,0 +1,14 @@
+# Hive runtime data (event bus, agent state, trader ledger) — local only
+hive_data/
+hive_data_demo/
+# secrets — never committed
+.env
+module/.env
+module/wallet.key
+NUK3R2-Trader-Bee-Agent-v1.0.0/trader-bee/secrets/*
+!NUK3R2-Trader-Bee-Agent-v1.0.0/trader-bee/secrets/README.md
+# build / cache
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/

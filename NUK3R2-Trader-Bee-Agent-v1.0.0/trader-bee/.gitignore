@@ -1,0 +1,3 @@
+secrets/*
+!secrets/README.md
+executor/node_modules/

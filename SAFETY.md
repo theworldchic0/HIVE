@@ -38,3 +38,22 @@
   at any time: revoke.cash, connect the trading wallet, revoke the router allowance.
 - **The Coinbase venue module refuses orders without `{confirm:true}`** (and the CLI's
   `--confirm GO` remains on top). Importing the module can never fire an order by accident.
+
+## The Trader Bee sandbox: the ONE scoped exception to law 2 (added 2026-09-27, beekeeper's request)
+The beekeeper asked for a trading agent with **partial automation**: its own wallet, fixed small buys.
+That is a deliberate, bounded exception to per-trade confirmation. It follows the same pattern as the
+sentinel (pre-approved rules, armed only), and it applies ONLY inside these walls:
+- **Own wallet only.** `NUK3R2-Trader-Bee-Agent-v1.0.0/trader-bee/secrets/agent_wallet.key`, created on
+  this machine, funded by you with only what it may spend. It can never touch `module/wallet.key` or
+  any other wallet.
+- **Buys only, fixed sizes:** discovery $10 / $5 / $1 by research confidence, and $1 on a NUK3R2
+  buy-zone entry. Sells and take-profits always need your per-trade approval.
+- **Verified contracts only:** research identity VERIFIED by ≥2 independent sources, gate PASS, rank
+  BUY/WATCH, plus live liquidity, security, price-impact and round-trip-sell gates.
+- **Hard budgets** ($/24h, $/7d, buys/24h, $/asset) and a circuit breaker (3 failed live trades in a row
+  pause it).
+- **Paper by default.** Live requires `"mode": "live"` in its config AND `python trader.py arm` typed by
+  you. **Arming is a human act. Claude never arms the Bee, never edits its sizes, budgets or gates,
+  and never approves on your behalf.**
+- **Stop any time:** `python trader.py disarm` / `pause`, or DISARM / Pause in the Hive UI.
+Everything outside these walls stays under laws 1–9 above.

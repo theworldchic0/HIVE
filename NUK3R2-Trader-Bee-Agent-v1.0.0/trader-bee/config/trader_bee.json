@@ -1,0 +1,116 @@
+{
+  "schema_version": "1.0.0",
+  "agent_id": "trader_bee",
+  "comment": "TRADER BEE = bounded partial automation. It may BUY on its own, but ONLY from its own dedicated wallet, ONLY at the fixed sizes below, ONLY on research-verified contracts on Base / Robinhood Chain, ONLY inside the budgets below, and ONLY after every hard gate passes. Sells, take-profits and anything a soft gate flags wait for the beekeeper's approval. Every number here is a BEEKEEPER SETTING: change it deliberately; the agent never changes it.",
+  "mode": "paper",
+  "mode_comment": "paper = simulate with live quotes, spend nothing. live = real swaps, and ALSO requires the arm file written by `python trader.py arm` (a human act). live without arming behaves as paper.",
+  "chains": [
+    "base",
+    "robinhood"
+  ],
+  "strategies": {
+    "discovery_tier": {
+      "enabled": true,
+      "sizes_usd": {
+        "high": 10,
+        "medium": 5,
+        "low": 1
+      },
+      "eligible_ranks": [
+        "BUY",
+        "WATCH"
+      ],
+      "require_discovery_flag": true,
+      "max_verdict_age_hours": 72,
+      "comment": "One buy per asset, ever, sized by research confidence: high $10, medium $5, low $1."
+    },
+    "zone_entry": {
+      "enabled": true,
+      "size_usd": 1,
+      "eligible_ranks": [
+        "BUY",
+        "WATCH"
+      ],
+      "max_signal_age_minutes": 120,
+      "cooldown_hours": 24,
+      "comment": "$1 when a gate-PASS, BUY/WATCH-ranked asset ENTERS the NUK3R2 buy zone (Fib Bee fib.zone.entered). One buy per structure; a re-anchored structure can trigger again after the cooldown."
+    }
+  },
+  "confidence_bands": {
+    "comment": "Used ONLY when a verdict carries no explicit `confidence`. core_quality / timing come from the CoinPicks Opportunity Matrix. The high band mirrors the CQ45+/T17+ exceptional tier; medium and low are operator defaults \u2014 confirm or change them.",
+    "high": {
+      "min_core_quality": 45,
+      "min_timing": 17
+    },
+    "medium": {
+      "min_core_quality": 35,
+      "min_timing": 13
+    },
+    "fallback": "low"
+  },
+  "budget": {
+    "daily_usd": 40,
+    "weekly_usd": 150,
+    "max_buys_per_day": 20,
+    "max_exposure_per_asset_usd": 25,
+    "min_stable_reserve_usd": 0,
+    "comment": "Rolling windows (last 24h / last 7d) of stable actually committed. The wallet balance is the final cap: fund it with only what you are willing to let it spend."
+  },
+  "gates": {
+    "min_identity_sources": 2,
+    "min_security_score": 75,
+    "security_unverifiable": "approval",
+    "hard_min_liquidity_usd": 25000,
+    "soft_min_liquidity_usd": 50000,
+    "min_pair_age_hours": 24,
+    "young_pair": "approval",
+    "max_price_impact_pct": 3.0,
+    "max_roundtrip_loss_pct": 12.0,
+    "max_buy_tax_pct": 10,
+    "max_sell_tax_pct": 10,
+    "zone_price_tolerance_pct": 3.0,
+    "comment": "Hard gates reject. Soft gates ('approval') park the buy in the approval queue for the beekeeper. unexplained_clone = a same-ticker token on the same chain with MORE liquidity that research did not list as a known decoy. min_security_score 75 is an OPERATOR SETTING, not a sourced constant.",
+    "unexplained_clone": "approval"
+  },
+  "execution": {
+    "slippage_pct": 2.0,
+    "slippage_min_pct": 0.5,
+    "slippage_max_pct": 8.0,
+    "approval_mode": "exact",
+    "min_gas_native": {
+      "base": 0.0003,
+      "robinhood": 0.0003
+    },
+    "retry_once_on_revert": true,
+    "receipt_timeout_s": 180,
+    "allowed_spenders": {
+      "base": [
+        "0x111111125421cA6dc452d289314280a0f8842A65",
+        "0x6131B5fae19EA4f9D964eAc0408E4408b66337b5"
+      ],
+      "robinhood": [
+        "0x5a705de8982235a7fa45bb83dcacf03a211389c7",
+        "0x111111125421cA6dc452d289314280a0f8842A65",
+        "0x6131B5fae19EA4f9D964eAc0408E4408b66337b5"
+      ]
+    },
+    "allowed_spenders_comment": "Pinned routers. If an aggregator returns any other spender/router the executor REFUSES and logs the exact address. Base: 1inch AggregationRouterV6 (0x1111\u20262A65, also the 1inch limit-order protocol) and KyberSwap MetaAggregationRouterV2 (0x6131\u202637b5). Robinhood Chain: 1inch deployed at a DIFFERENT address there \u2014 0x5a70\u202689c7 is the limit-order protocol per 1inch's official @1inch/limit-order-sdk constants, and is expected to be the swap router too. Before arming on Robinhood, confirm each address on the chain's explorer; remove any you cannot confirm."
+  },
+  "take_profit": {
+    "propose": true,
+    "level_percent": 21.4,
+    "fraction_of_position": 0.5,
+    "expiry_days": 60,
+    "comment": "After a fill the Bee PROPOSES a resting 1inch limit sell at the NSZ edge (21.4% level of the body-high structure) for half the position. Proposals only \u2014 nothing is placed until you approve it."
+  },
+  "safety": {
+    "circuit_breaker_consecutive_failures": 3,
+    "arm_phrase": "I FUNDED THIS WALLET AND ARM THE TRADER BEE",
+    "retry_spacing_minutes": 10
+  },
+  "loop": {
+    "interval_seconds": 60,
+    "marks_every_seconds": 300,
+    "balances_every_seconds": 300
+  }
+}

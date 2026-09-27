@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NUK3R2 Hive</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2l12 7v14l-12 7-12-7V9z' fill='%23f2a93b'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0f0d0a; --panel:#18150f; --panel-2:#211c14; --line:#2e271c; --text:#f1e9dc; --muted:#a39a8a; --faint:#6f675b;
+  --honey:#f2a93b; --honey-2:#ffcf7a; --green:#4cc38a; --yellow:#e8c547; --red:#ef6461; --blue:#7fb2ff;
+  --radius:12px; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){--bg:#faf6ef;--panel:#fff;--panel-2:#f5eee2;--line:#e7dccb;--text:#231d14;--muted:#6c6353;--faint:#9b9282;--honey:#c47a0f;--honey-2:#a35f00;--green:#1f8a57;--yellow:#a6840a;--red:#c9423f;--blue:#2f6fd6}
+}
+:root[data-theme="dark"]{--bg:#0f0d0a;--panel:#18150f;--panel-2:#211c14;--line:#2e271c;--text:#f1e9dc;--muted:#a39a8a;--faint:#6f675b;--honey:#f2a93b;--honey-2:#ffcf7a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
+.logo{width:28px;height:28px}
+h1{font-size:17px;margin:0;letter-spacing:.06em}
+h1 span{color:var(--honey)}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px;font-weight:600}
+.sub{color:var(--muted);font-size:12px}
+.spacer{flex:1}
+main{max-width:1320px;margin:0 auto;padding:16px 20px 60px;display:grid;gap:16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;min-width:0}
+.grid2{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:900px){.grid2,.grid3{grid-template-columns:1fr}main{padding:12px 16px 60px}.reason{min-width:240px}td{white-space:normal}}
+.banner{display:flex;flex-wrap:wrap;gap:18px;align-items:center;background:linear-gradient(90deg,color-mix(in srgb,var(--honey) 16%,var(--panel)),var(--panel));}
+.stat{display:flex;flex-direction:column}
+.stat b{font-size:20px;font-variant-numeric:tabular-nums}
+.stat small{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.meter{height:8px;background:var(--panel-2);border-radius:99px;overflow:hidden;min-width:160px}
+.meter>i{display:block;height:100%;background:var(--honey)}
+.agents{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.agent{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.agent .name{font-weight:600;display:flex;align-items:center;gap:8px}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+.green{background:var(--green)}.yellow{background:var(--yellow)}.red{background:var(--red)}.grey{background:var(--faint)}
+.pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;letter-spacing:.03em;border:1px solid var(--line);background:var(--panel-2);white-space:nowrap}
+.pill.live{background:var(--red);color:#fff;border-color:transparent}
+.pill.paper{background:var(--blue);color:#0b1020;border-color:transparent}
+.pill.ok{color:var(--green)}.pill.warn{color:var(--yellow)}.pill.bad{color:var(--red)}.pill.honey{color:var(--honey)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button{font:inherit;font-weight:600;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);color:var(--text);padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--honey)}
+button.danger{background:var(--red);border-color:transparent;color:#fff}
+button.go{background:var(--green);border-color:transparent;color:#06140d}
+button:disabled{opacity:.45;cursor:not-allowed}
+.mono{font-family:var(--mono);font-size:12px}
+.addr{font-family:var(--mono);font-size:12px;word-break:break-all;background:var(--panel-2);padding:4px 8px;border-radius:6px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+td.num{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--mono);font-size:12px}
+.scroll{overflow-x:auto}
+.reason{color:var(--muted);font-size:12px;max-width:520px}
+.approval{border:1px solid var(--honey);border-radius:10px;padding:12px;background:color-mix(in srgb,var(--honey) 7%,var(--panel));display:grid;gap:6px}
+.empty{color:var(--faint);padding:10px 0}
+.zbar{position:relative;height:10px;background:var(--panel-2);border-radius:99px;min-width:140px}
+.zbar .buy{position:absolute;left:0;top:0;bottom:0;width:21.4%;background:color-mix(in srgb,var(--green) 35%,transparent);border-radius:99px 0 0 99px}
+.zbar .sell{position:absolute;left:78.6%;width:4%;top:0;bottom:0;background:color-mix(in srgb,var(--red) 35%,transparent)}
+.zbar .mark{position:absolute;top:-3px;width:3px;height:16px;background:var(--honey);border-radius:2px}
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tabs button.on{border-color:var(--honey);color:var(--honey)}
+.feed{max-height:340px;overflow:auto;font-family:var(--mono);font-size:12px}
+.feed div{padding:4px 0;border-bottom:1px dashed var(--line)}
+.warnbox{border:1px solid var(--red);border-radius:10px;padding:10px 12px;color:var(--red);background:color-mix(in srgb,var(--red) 8%,var(--panel))}
+footer{color:var(--faint);font-size:12px;text-align:center;padding:20px}
+</style>
+</head>
+<body>
+<header>
+  <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2l12 7v14l-12 7-12-7V9z" fill="var(--honey)"/><path d="M16 9l6 3.5v7L16 23l-6-3.5v-7z" fill="var(--bg)"/></svg>
+  <h1>NUK3R2 <span>HIVE</span></h1>
+  <span class="sub" id="refreshed">connecting…</span>
+  <span class="spacer"></span>
+  <span id="modeBadge"></span>
+</header>
+<main>
+  <section class="panel banner" id="blueprint" aria-label="Bottom Blueprint"></section>
+
+  <div class="grid2">
+    <section class="panel" aria-label="Trader Bee">
+      <div class="row" style="justify-content:space-between;margin-bottom:10px">
+        <h2 style="margin:0">🐝 Trader Bee</h2>
+        <div class="row" id="traderButtons"></div>
+      </div>
+      <div id="traderAlert"></div>
+      <div class="grid3" id="traderStats"></div>
+      <div style="margin-top:14px" id="wallet"></div>
+    </section>
+    <section class="panel" aria-label="Market Direction">
+      <h2>Market Direction</h2>
+      <div id="md"></div>
+    </section>
+  </div>
+
+  <section class="panel" aria-label="Approvals">
+    <h2>Waiting for your approval</h2>
+    <div id="approvals" style="display:grid;gap:10px"></div>
+  </section>
+
+  <section class="panel" aria-label="Positions">
+    <div class="tabs" id="posTabs"><button data-m="live" class="on">Live positions</button><button data-m="paper">Paper positions</button></div>
+    <div class="scroll" id="positions"></div>
+  </section>
+
+  <section class="panel" aria-label="Decisions">
+    <h2>Trader Bee decisions</h2>
+    <div class="scroll" id="intents"></div>
+  </section>
+
+  <section class="panel" aria-label="Fib Bee">
+    <h2>Fib Bee — NUK3R2 zone watch <span class="sub" id="fibCount"></span></h2>
+    <div class="scroll" id="fib"></div>
+  </section>
+
+  <div class="grid2">
+    <section class="panel" aria-label="Queen">
+      <h2>Queen Bee — agent health</h2>
+      <div class="agents" id="agents"></div>
+      <div id="recs" style="margin-top:12px"></div>
+    </section>
+    <section class="panel" aria-label="Hive bus">
+      <h2>Hive bus</h2>
+      <div class="feed" id="events"></div>
+    </section>
+  </div>
+</main>
+<footer>Local only · 127.0.0.1 · reads Hive files, never keys · arming is a CLI act (<span class="mono">python trader.py arm</span>) · not investment advice</footer>
+<script src="/app.js"></script>
+</body>
+</html>

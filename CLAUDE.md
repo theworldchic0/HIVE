@@ -105,3 +105,19 @@ Record the addition in SETUP-STATE.md. If anything on the new chain can't be ver
 Trades go through the Trade Idea panel or the skills; every path previews first and
 ends at a plain-English confirmation card the human must press. When they ask
 "where are my orders," run `node module/check-orders.mjs` and read back truth.
+
+## The NUK3R2 Hive (added 2026-09-27): read `HIVE.md`
+This folder also holds the Beekeeper's **Hive**: independent agents talking over one event bus (`hive/`).
+They are the Queen Bee (supervisor), Market Direction, the Bottom Blueprint Observatory, the Fib Bee
+(NUK3R2 zones) and the **Trader Bee** (bounded auto-buyer with its own wallet). The UI is
+`python -m hive start` on http://127.0.0.1:8790.
+
+Rules for you, Claude, on top of the constitution above:
+- The Trader Bee is the ONE scoped exception to law 2 (see SAFETY.md, "Trader Bee sandbox"). **You never
+  arm it, never create or fund its wallet for the human, never edit `config/trader_bee.json`
+  sizes/budgets/gates/mode, and never approve a parked intent.** Those are the Beekeeper's acts. You may
+  explain, run `status`, run tests, run paper mode, and `pause`/`disarm` when asked (safe direction).
+- When research on a token is finished, hand it to the Hive with the `hive-verdict` skill
+  (`.claude/skills/hive-verdict/SKILL.md`). Identity = chain + verified contract. Unverifiable fields
+  are null, never guessed.
+- Market Direction is context, never a trade trigger. Bottom Blueprint snapshots are immutable.

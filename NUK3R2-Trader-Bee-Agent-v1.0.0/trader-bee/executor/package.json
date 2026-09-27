@@ -1,0 +1,15 @@
+{
+  "name": "trader-bee-executor",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Trader Bee on-chain executor: 1inch v6 vs KyberSwap race, pinned spenders, receipt + balance-delta truth, 1inch limit take-profits. Adapted from the Altcoin Trading Terminal engine (module/, cockpit/route-scan.mjs).",
+  "scripts": {
+    "selftest": "node test/selftest.mjs"
+  },
+  "dependencies": {
+    "@1inch/limit-order-sdk": "^5.3.1",
+    "ethers": "^6.13.0"
+  },
+  "engines": { "node": ">=20.9.0" }
+}

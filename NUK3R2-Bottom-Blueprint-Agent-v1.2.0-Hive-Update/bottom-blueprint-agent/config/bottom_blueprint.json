@@ -34,5 +34,11 @@
       "accuracy_status",
       "tracked_candidate_count"
     ]
+  },
+  "step_2_rule": {
+    "rule": "BTC >= 5% above 200-day average for 45 consecutive days",
+    "threshold_pct_above_200dma": 5,
+    "required_consecutive_days": 45,
+    "source": "shared_context/latest.json momentum.rule (published Blueprint snapshot BB-2026-09-24-001)"
   }
 }

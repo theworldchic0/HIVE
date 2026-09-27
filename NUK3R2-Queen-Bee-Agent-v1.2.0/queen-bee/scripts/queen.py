@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-import argparse, json, sqlite3, time
+import argparse, json, os, sqlite3, time
 from datetime import datetime, timezone
 from pathlib import Path
-ROOT=Path(__file__).resolve().parents[1]; DATA=ROOT/'data'; DB=DATA/'queen.db'; SNAPSHOT=DATA/'queen_snapshot.json'
+ROOT=Path(__file__).resolve().parents[1]; DATA=Path(os.environ['QUEEN_DATA']) if os.environ.get('QUEEN_DATA') else ROOT/'data'; DB=DATA/'queen.db'; SNAPSHOT=DATA/'queen_snapshot.json'
 CONFIG=json.loads((ROOT/'config/queen.json').read_text()); REGISTRY=json.loads((ROOT/'config/agent_registry.json').read_text())
 SCHEMA='''
 CREATE TABLE IF NOT EXISTS agents(id TEXT PRIMARY KEY,display_name TEXT NOT NULL,role TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'unknown',last_heartbeat REAL,last_success REAL,last_failure REAL,last_error TEXT,jobs_completed INTEGER DEFAULT 0,jobs_failed INTEGER DEFAULT 0,communication_failures INTEGER DEFAULT 0,metadata_json TEXT DEFAULT '{}');
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS change_proposals(id INTEGER PRIMARY KEY AUTOINCREMENT
 '''
 def now(): return time.time()
 def iso(ts=None): return datetime.fromtimestamp(ts or now(),timezone.utc).isoformat()
-def db(): DATA.mkdir(exist_ok=True); c=sqlite3.connect(DB); c.executescript(SCHEMA); return c
+def db(): DATA.mkdir(parents=True,exist_ok=True); c=sqlite3.connect(DB); c.executescript(SCHEMA); return c
 def ensure_agents(c):
     for a in REGISTRY['agents']: c.execute('INSERT OR IGNORE INTO agents(id,display_name,role) VALUES(?,?,?)',(a['id'],a['display_name'],a['role']))
     c.commit()
