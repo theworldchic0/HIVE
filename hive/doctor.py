@@ -7,7 +7,11 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+import os
 import sys
+
+if os.name == "nt":
+    os.system("")  # turns on ANSI colour support in the classic Windows console
 
 from . import keys
 from .paths import BLUEPRINT_DIR, FIB_DIR, QUEEN_DIR, TRADER_DIR, data_dir

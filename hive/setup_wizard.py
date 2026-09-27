@@ -15,7 +15,11 @@ from __future__ import annotations
 import getpass
 import shutil
 import subprocess
+import os
 import sys
+
+if os.name == "nt":
+    os.system("")  # turns on ANSI colour support in the classic Windows console
 
 from . import keys
 from .paths import TRADER_DIR

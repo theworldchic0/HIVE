@@ -1,6 +1,9 @@
 @echo off
 REM Double-click (Windows): the API-key walkthrough on its own (add / replace / re-test keys).
 cd /d "%~dp0"
+chcp 65001 >nul
+set PYTHONUTF8=1
+set PYTHONIOENCODING=utf-8
 set PY=python
 where python >nul 2>nul || set PY=py -3
 %PY% -m hive setup
