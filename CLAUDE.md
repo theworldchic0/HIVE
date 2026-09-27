@@ -121,3 +121,9 @@ Rules for you, Claude, on top of the constitution above:
   (`.claude/skills/hive-verdict/SKILL.md`). Identity = chain + verified contract. Unverifiable fields
   are null, never guessed.
 - Market Direction is context, never a trade trigger. Bottom Blueprint snapshots are immutable.
+- **API keys for the Hive:** send the human to `START-HERE.md` / `python -m hive setup` (or double-click
+  `HIVE-SETUP-KEYS`). They paste each key into THEIR terminal (hidden input, tested live, saved to
+  `module/.env`). Never ask for a key in chat, never run the walkthrough on their behalf with a value.
+  `python -m hive doctor` is safe to run and never prints a key.
+- The Discovery Scout's queue (`python NUK3R2-Discovery-Scout-v1.0.0/discovery-scout/scout.py queue`) is
+  the research to-do list. Scout finds are candidates: research and verify them before any verdict.

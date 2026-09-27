@@ -62,4 +62,13 @@ for (const chainId of [8453, 4663]) {
   assert.ok(spenderAllowed(td.domain.verifyingContract, cfg.execution.allowed_spenders[chainName]), `limit-order protocol on ${chainId} must be pinned in config`);
   ok(`limit order signs on chain ${chainId}; protocol ${td.domain.verifyingContract.slice(0, 10)}… is pinned in config`);
 }
+// take-profit order classification (same rules as the terminal's check-orders.mjs)
+const { classifyOrder } = await import("../exec.mjs");
+const mk = (making, remaining, reason) => ({ data: { makingAmount: String(making) }, remainingMakerAmount: remaining == null ? undefined : String(remaining), orderInvalidReason: reason });
+assert.equal(classifyOrder(mk(1000, 0, "order filled")).status, "FILLED"); ok("orderbook 'order filled' = FILLED");
+assert.equal(classifyOrder(mk(1000, 1000, null)).status, "RESTING"); ok("untouched order = RESTING");
+const part = classifyOrder(mk(1000, 250, null));
+assert.equal(part.status, "PARTIAL"); assert.equal(part.filledPct, 75); ok("partial fill = PARTIAL 75%");
+assert.equal(classifyOrder(mk(1000, 1000, "expired")).status, "CLOSED"); ok("expired/cancelled = CLOSED");
+
 console.log(`\nEXECUTOR OFFLINE SELFTEST PASS — ${n} checks, no network touched, nothing can move money.`);

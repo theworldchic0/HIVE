@@ -1,5 +1,7 @@
 # 🐝 The NUK3R2 Hive: how the pieces fit
 
+> **New here? Read [`START-HERE.md`](START-HERE.md)** — install, the API-key walkthrough, first run.
+
 You're the **Beekeeper**. The Hive is a set of small agents, each one runnable on its own, that pass
 typed messages over one shared event bus. The trading terminal (`module/`, `cockpit/`) is still here
 and unchanged. The Trader Bee borrowed its execution engine: the 1inch/KyberSwap race, 1inch limit
@@ -8,6 +10,7 @@ orders, the fake-pool guard and the registry discipline.
 ```
                 ┌────────────────────── Queen Bee (health, usage, waste, proposals) ──────────────────────┐
                 │                         heartbeats · provider usage · failures                           │
+  Discovery Scout ─ research.request (queue) ─► Research Bee
   Research Bee ─┼─ research.verdict ─┬──────────────► Fib Bee ── fib.zone.entered/exited ──┐              │
   (Claude Code, │                    │                (structures + zones, no wallet)     │              │
    CoinPicks)   │                    └──────────────────────────────────────────────────► Trader Bee ───┼─► its own wallet
@@ -20,6 +23,7 @@ orders, the fake-pool guard and the registry discipline.
 | Agent | Folder | Runs | Can trade? |
 |---|---|---|---|
 | Queen Bee | `NUK3R2-Queen-Bee-Agent-v1.2.0/` | on demand (`scripts/queen.py audit`) and as telemetry sink | no (may pause/disarm the Trader Bee) |
+| Discovery Scout | `NUK3R2-Discovery-Scout-v1.0.0/discovery-scout/` | every 6 h | no (queues candidates for research only) |
 | Research Bee | Claude Code + `.claude/skills/hive-verdict/` | when you research | no |
 | Market Direction | `NUK3R2-Market-Direction-Agent-v1.1.0-Hive-Update/` | weekly | no |
 | Bottom Blueprint Observatory | `NUK3R2-Bottom-Blueprint-Agent-v1.2.0-Hive-Update/` | clock | no |
@@ -28,7 +32,9 @@ orders, the fake-pool guard and the registry discipline.
 
 ## Run it
 ```
-python -m hive start        # Fib Bee watcher + Trader Bee loop + UI   (or double-click HIVE.bat / HIVE.command)
+python -m hive start        # first run: API-key walkthrough, then Scout + Fib Bee + Trader Bee + UI (HIVE.bat / HIVE.command)
+python -m hive setup        # the key walkthrough on its own (HIVE-SETUP-KEYS.bat / .command)
+python -m hive doctor       # health check: every key tested live, RPCs, executor, agents
 python -m hive demo         # offline demo with FAKE tokens in hive_data_demo/ on :8791 (no network, no money)
 python -m hive tail -n 30   # what just moved on the bus
 ```
@@ -59,6 +65,7 @@ python -m pytest -q hive/tests
 cd NUK3R2_Fib_Agent_v0.1.0/NUK3R2_Fib_Agent_v0.1.0 && python -m pytest -q tests
 cd NUK3R2-Trader-Bee-Agent-v1.0.0/trader-bee && python -m pytest -q tests && (cd executor && npm run selftest)
 cd NUK3R2-Bottom-Blueprint-Agent-v1.2.0-Hive-Update/bottom-blueprint-agent && python -m pytest -q tests
+cd NUK3R2-Discovery-Scout-v1.0.0/discovery-scout && python -m pytest -q tests
 ```
 
 ## Known limits (said plainly)
@@ -68,9 +75,10 @@ cd NUK3R2-Bottom-Blueprint-Agent-v1.2.0-Hive-Update/bottom-blueprint-agent && py
   one you watch.
 - **Robinhood Chain router addresses** must be confirmed by you on the chain's explorer before
   arming there (see the Trader Bee README, step 6).
-- **Take-profit fills** placed on the 1inch orderbook are recorded as `PLACED`. Fills are checked with
-  the terminal's `node module/check-orders.mjs`; the Bee doesn't book limit fills into P&L yet.
-- **The Research Bee has no automated scanner in this repo.** Verdicts come from your CoinPicks research
-  sessions via `hive publish`. The 6-hour Base/RH discovery engine from your brief isn't built yet.
+- **Take-profit fills** are read from the 1inch orderbook every few minutes (filled / partial / expired)
+  and booked into positions; paper take-profits fill when the price reaches the limit.
+- **The Discovery Scout finds candidates, not verdicts.** Scoring (gate, rank, confidence) is still your
+  CoinPicks research in Claude Code, published with the `hive-verdict` skill. That's deliberate: nothing
+  the Scout finds can trigger a buy until research has passed it.
 - **Market Direction** has no published snapshot yet (`status: MISSING`); the UI says so rather than
   inventing one.

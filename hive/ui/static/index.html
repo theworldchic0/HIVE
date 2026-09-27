@@ -81,6 +81,8 @@ footer{color:var(--faint);font-size:12px;text-align:center;padding:20px}
   <span id="modeBadge"></span>
 </header>
 <main>
+  <section class="panel" id="setupPanel" aria-label="Setup" hidden></section>
+
   <section class="panel banner" id="blueprint" aria-label="Bottom Blueprint"></section>
 
   <div class="grid2">
@@ -112,6 +114,17 @@ footer{color:var(--faint);font-size:12px;text-align:center;padding:20px}
   <section class="panel" aria-label="Decisions">
     <h2>Trader Bee decisions</h2>
     <div class="scroll" id="intents"></div>
+  </section>
+
+  <section class="panel" aria-label="Research queue">
+    <h2>Research queue — Discovery Scout <span class="sub" id="scoutCount"></span></h2>
+    <div class="sub" style="margin-bottom:8px">Candidates only (Base + Robinhood trending / new pools that passed the scout filters). Nothing here can trade: research it in Claude Code, then publish a verdict with the <span class="mono">hive-verdict</span> skill.</div>
+    <div class="scroll" id="scout"></div>
+  </section>
+
+  <section class="panel" aria-label="Keys">
+    <h2>API keys <span class="sub">(values are never shown here)</span></h2>
+    <div class="scroll" id="keys"></div>
   </section>
 
   <section class="panel" aria-label="Fib Bee">

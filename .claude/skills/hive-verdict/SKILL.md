@@ -8,6 +8,12 @@ description: Hand a finished CoinPicks research result to the NUK3R2 Hive as a r
 A verdict is the ONLY way research reaches the Trader Bee. It can cause a real buy of $1–$10 from
 the Bee's wallet when armed, so accuracy beats speed.
 
+## 0. Where candidates come from
+The Discovery Scout queues Base/Robinhood candidates every 6h:
+`python NUK3R2-Discovery-Scout-v1.0.0/discovery-scout/scout.py queue` (add `--json` for details).
+A queue entry is NOT verified. Its contract came from a pool listing, so run the full identity check
+below. Tokens from the queue get `discovery: true`. `scout.py dismiss <symbol> --reason ".."` drops one.
+
 ## 1. Identity first (non-negotiable)
 - `chain` must be `base` or `robinhood` to be tradable (other chains are allowed but are never traded).
 - `contract` must be verified by **at least two independent sources**: DexScreener token page, the

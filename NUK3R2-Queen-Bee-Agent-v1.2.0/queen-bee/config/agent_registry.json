@@ -12,6 +12,11 @@
       "role": "phase1_token_research"
     },
     {
+      "id": "discovery_scout",
+      "display_name": "Discovery Scout",
+      "role": "base_rh_candidate_finder_feeds_research_queue"
+    },
+    {
       "id": "narrative_agent",
       "display_name": "Narrative / Meta Bee",
       "role": "narrative_and_meta_tracking"

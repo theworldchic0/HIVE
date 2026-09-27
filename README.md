@@ -1,3 +1,7 @@
+> ## 🐝 NUK3R2 HIVE: new users start at [`START-HERE.md`](START-HERE.md)
+> Double-click `HIVE.bat` (Windows) / `HIVE.command` (Mac). The first start walks you through every API key.
+> How the agents fit: [`HIVE.md`](HIVE.md).
+
 # Altcoin Trading System — the CoinPicks Research Engine + Trading Terminal, in one zip
 
 > ## 🚨 IF YOU ARE AN AI READING THIS FOLDER FOR THE FIRST TIME

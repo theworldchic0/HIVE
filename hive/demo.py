@@ -112,6 +112,16 @@ def seed():
                                         "price": px, "checked_at": now, "bottom": 1.0, "wick_high": 10.0, "body_high": 10.0}
     from .paths import sub
     (sub("fib_agent") / "state.json").write_text(json.dumps(fib_state, indent=1))
+    queue = {}
+    for sym, ch, liq, vol, b_, s_, age, sc in (("DEMOSCOUT", "8", 310_000, 420_000, 1210, 640, 52, 17.4), ("DEMONEW", "9", 88_000, 61_000, 380, 290, 30, 12.1)):
+        aid = f"base:{_addr(ch)}"
+        payload = {"asset_id": aid, "chain": "base", "contract": _addr(ch), "symbol": sym, "name": f"{sym} / WETH", "source": "discovery_scout/trending_pools",
+                   "pool": _addr("e"), "observed": {"price_usd": 0.01, "liquidity_usd": liq, "volume_24h_usd": vol, "buys_24h": b_, "sells_24h": s_,
+                                                     "change_24h_pct": 24.0, "pool_age_hours": age * 24},
+                   "scout_score": sc, "reasons": ["trending pools on base", f"liq ${liq:,}", "DEMO DATA"], "requested_by": "discovery_scout"}
+        bus.publish("research.request", "discovery_scout", payload)
+        queue[aid] = {**payload, "status": "QUEUED", "first_seen": now, "last_seen": now, "requested_at": now, "times_seen": 1}
+    (sub("scout") / "queue.json").write_text(json.dumps(queue, indent=1))
     bee = TraderBee()
     for _ in range(2):
         bee.tick()
@@ -129,7 +139,7 @@ def main(port: int = 8791):
     if fresh:
         bee = seed()
         from hive import queen_client
-        for a in ("research_agent", "fib_agent", "market_direction", "bottom_blueprint_observatory"):
+        for a in ("research_agent", "discovery_scout", "fib_agent", "market_direction", "bottom_blueprint_observatory"):
             queen_client.heartbeat(a, "healthy")
         print("DEMO seeded:", json.dumps(bee.status()["counts"]))
     from .ui.server import serve

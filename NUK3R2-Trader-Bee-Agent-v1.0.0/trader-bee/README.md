@@ -44,6 +44,9 @@ In **paper** mode "execute" records a fill at the live best quote and spends not
 the executor (Node, adapted from the trading terminal's engine) signs from the Bee's wallet, then
 confirms the result from the chain receipt and the wallet balance change, not from the quote.
 
+Take-profit outcomes are tracked from the 1inch orderbook (filled / partial / expired) and booked into
+positions. Paper take-profits fill when the price reaches the limit.
+
 After a fill, the Bee **proposes** a take-profit: a resting 1inch limit sell of half the position at
 the NSZ edge (21.4% level of the body-high structure). It sits in your approval queue and nothing is
 placed until you approve it.
@@ -60,10 +63,10 @@ All commands run inside this folder: `NUK3R2-Trader-Bee-Agent-v1.0.0/trader-bee/
    ```
    The self-test is offline and should end with `EXECUTOR OFFLINE SELFTEST PASS`.
 
-2. **API keys.** The Bee reads `ONEINCH_API_KEY` (required for 1inch quotes and take-profits) and
-   `COINGECKO_API_KEY` (optional, for charts and candles) from `<Hive folder>/.env` or the terminal's
-   `module/.env`. Put them there yourself. Never paste keys into a chat.
-   Optional: `BASE_RPC_URL` / `ROBINHOOD_RPC_URL` if the public RPCs rate-limit you.
+2. **API keys:** run the walkthrough, `python -m hive setup` from the Hive folder (or double-click
+   `HIVE-SETUP-KEYS`). It asks for each key, hides it while you paste, tests it live and saves it to
+   `module/.env`. The Bee needs `ONEINCH_API_KEY`; `COINGECKO_API_KEY` and an Alchemy-built
+   `BASE_RPC_URL` are recommended. Never paste keys into a chat.
 
 3. **Run in PAPER first** (the default). From the Hive folder, double-click `HIVE.bat` (Windows) or
    `HIVE.command` (Mac), or run `python -m hive start`. Watch the UI at http://127.0.0.1:8790 for
@@ -154,8 +157,8 @@ the zone differently.
 ## Tests
 
 ```
-python -m pytest -q tests          # 37 offline tests: every gate, both triggers, budgets, approvals, live + reconcile
-cd executor && npm run selftest    # 17 offline checks: units, venue race, pinned spenders, wallet, limit-order signing
+python -m pytest -q tests          # 39 offline tests: every gate, both triggers, budgets, approvals, live + reconcile
+cd executor && npm run selftest    # 21 offline checks: units, venue race, pinned spenders, wallet, limit-order signing
 ```
 
 Not investment advice. The Bee executes your rules. You decide the rules and what it's allowed to spend.

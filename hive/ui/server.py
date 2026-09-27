@@ -78,11 +78,26 @@ def trader_status() -> dict:
         return {"ok": False, "error": f"{type(e).__name__}: {e}"}
 
 
+def setup_status() -> dict:
+    from .. import keys
+    rows = keys.status_rows()
+    missing_required = [r["title"] for r in rows if r["level"] == "required" and not r["set"] and r["decision"] != "SKIPPED"]
+    return {"keys": rows, "missing_required": missing_required, "undecided": len(keys.undecided())}
+
+
+def scout_queue() -> dict:
+    q = _json_file(sub("scout") / "queue.json", {})
+    rows = sorted((r for r in q.values() if r.get("status") == "QUEUED"), key=lambda r: -(r.get("scout_score") or 0))
+    done = sorted((r for r in q.values() if r.get("status") == "RESEARCHED"), key=lambda r: r.get("researched_at") or "", reverse=True)
+    return {"queued": rows[:50], "queued_count": len(rows), "researched": done[:10], "total_seen": len(q)}
+
+
 def hive_state() -> dict:
     q = queen_client.snapshot()
     return {"queen": {"agents": q.get("agents", []), "recommendations": q.get("open_recommendations", []), "timestamp": q.get("timestamp_utc"),
                       "error": q.get("error")},
             "blueprint": blueprint(), "market_direction": market_direction(), "fib": fib(), "trader": trader_status(),
+            "setup": setup_status(), "scout": scout_queue(),
             "events": list(reversed(bus.tail(40)))}
 
 

@@ -175,6 +175,33 @@ function renderEvents(evs) {
   }).join("") || `<div class="empty">No events yet.</div>`;
 }
 
+function renderSetup(st) {
+  const el = $("setupPanel");
+  if (!st) { el.hidden = true; return; }
+  const need = st.missing_required || [];
+  el.hidden = !(need.length || st.undecided);
+  el.innerHTML = need.length
+    ? `<div class="warnbox"><b>Setup not finished:</b> ${need.map(esc).join(", ")} missing. Double-click <span class="mono">HIVE-SETUP-KEYS</span> in the Hive folder (or run <span class="mono">python -m hive setup</span>) — it walks you through each key, tests it live, and the Hive picks it up on the next loop.</div>`
+    : `<div class="sub">${st.undecided} optional key(s) not decided yet — run <span class="mono">python -m hive setup</span> when you want to add or SKIP them.</div>`;
+  $("keys").innerHTML = `<table><thead><tr><th>Key</th><th>Level</th><th>Status</th><th>Stored in</th><th>Recorded</th></tr></thead><tbody>${
+    (st.keys || []).map((k) => `<tr><td><b>${esc(k.title)}</b><div class="sub mono">${esc(k.name)}</div></td><td>${esc(k.level)}</td>
+      <td>${k.set ? `<span class="pill ok">set</span> <span class="mono sub">${esc(k.masked)}</span>` : k.decision === "SKIPPED" ? `<span class="pill">skipped</span>` : `<span class="pill ${k.level === "required" ? "bad" : "warn"}">not set</span>`}</td>
+      <td class="mono sub">${esc(k.file)}</td><td class="sub">${esc(k.decision || "—")} ${esc(k.decided_at || "")}</td></tr>`).join("")
+  }</tbody></table><div class="sub" style="margin-top:8px">Add / replace / re-test: <span class="mono">python -m hive setup</span> · health check: <span class="mono">python -m hive doctor</span></div>`;
+}
+
+function renderScout(sc) {
+  const rows = (sc && sc.queued) || [];
+  $("scoutCount").textContent = sc ? `(${sc.queued_count} queued · ${sc.total_seen} seen)` : "";
+  if (!rows.length) { $("scout").innerHTML = `<div class="empty">Queue empty. The scout scans every 6 hours while the Hive runs.</div>`; return; }
+  $("scout").innerHTML = `<table><thead><tr><th>Token</th><th class="num">Score</th><th class="num">Liquidity</th><th class="num">24h vol</th><th class="num">Buys/Sells</th><th class="num">Age</th><th>Why surfaced</th></tr></thead><tbody>${
+    rows.map((r) => { const o = r.observed || {}; return `<tr><td><b>${esc(r.symbol)}</b><div class="sub">${esc(r.chain)} · <span class="mono">${esc(r.contract)}</span></div></td>
+      <td class="num">${esc(r.scout_score)}</td><td class="num">${usd(o.liquidity_usd, 0)}</td><td class="num">${usd(o.volume_24h_usd, 0)}</td>
+      <td class="num">${esc(o.buys_24h)}/${esc(o.sells_24h)}</td><td class="num">${o.pool_age_hours == null ? "—" : Math.round(o.pool_age_hours / 24) + "d"}</td>
+      <td class="reason">${(r.reasons || []).map(esc).join(" · ")}</td></tr>`; }).join("")
+  }</tbody></table>`;
+}
+
 async function refresh() {
   try {
     const r = await fetch("/api/hive", { cache: "no-store" });
@@ -188,6 +215,8 @@ async function refresh() {
     renderFib(STATE.fib);
     renderQueen(STATE.queen);
     renderEvents(STATE.events);
+    renderSetup(STATE.setup);
+    renderScout(STATE.scout);
     $("refreshed").textContent = "updated " + new Date().toLocaleTimeString();
   } catch (e) {
     $("refreshed").textContent = "Hive UI server unreachable — " + e.message;

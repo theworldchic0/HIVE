@@ -265,14 +265,46 @@ async function cmdLimitSell(p) {
            expiresAt: new Date(Number(expiration) * 1000).toISOString() };
 }
 
+// ------------------------------------------------------------------ take-profit truth (adapted from module/check-orders.mjs)
+// Classification order matters: the orderbook's own verdict first, then remaining-amount math.
+export function classifyOrder(o) {
+  const d = o.data || {};
+  const making = BigInt(d.makingAmount || 0);
+  const remaining = o.remainingMakerAmount != null ? BigInt(o.remainingMakerAmount) : null;
+  const filledPct = remaining != null && making > 0n ? Number(((making - remaining) * 1000000n) / making) / 10000 : null;
+  const reason = o.orderInvalidReason ?? null;
+  let status;
+  if (reason === "order filled" || (filledPct != null && filledPct >= 99.999)) status = "FILLED";
+  else if (reason == null && (filledPct == null || filledPct === 0)) status = "RESTING";
+  else if (reason == null && filledPct > 0) status = "PARTIAL";
+  else status = "CLOSED";
+  return { status, filledPct, reason };
+}
+
+async function cmdOrderStatus(p) {
+  const c = chain(p.chain);
+  const key = secret("ONEINCH_API_KEY");
+  if (!key) return { ok: false, error: "no ONEINCH_API_KEY for the 1inch orderbook" };
+  const maker = loadWallet().address;
+  const r = await fetch(`https://api.1inch.dev/orderbook/v4.0/${c.chainId}/address/${maker}?page=1&limit=100&statuses=1,2,3`,
+    { headers: { Authorization: `Bearer ${key}`, Accept: "application/json" }, signal: AbortSignal.timeout(15_000) });
+  if (!r.ok) return { ok: false, error: `orderbook HTTP ${r.status}` };
+  const orders = await r.json();
+  const want = new Set((p.orderHashes || []).map(h => h.toLowerCase()));
+  const out = {};
+  for (const o of orders) if (want.has(String(o.orderHash).toLowerCase())) out[String(o.orderHash).toLowerCase()] = classifyOrder(o);
+  for (const h of want) if (!out[h]) out[h] = { status: "NOT_FOUND", filledPct: null, reason: "not in the maker's orderbook listing" };
+  return { ok: true, orders: out };
+}
+
 // ------------------------------------------------------------------ dispatch
 const COMMANDS = {
   "wallet-new": async () => ({ ok: true, address: createWallet(), created: true }),
-  address: cmdAddress, balances: cmdBalances, quote: cmdQuote, buy: cmdBuy, sell: cmdSell, "limit-sell": cmdLimitSell, receipt: cmdReceipt,
+  address: cmdAddress, balances: cmdBalances, quote: cmdQuote, buy: cmdBuy, sell: cmdSell, "limit-sell": cmdLimitSell, receipt: cmdReceipt, "order-status": cmdOrderStatus,
 };
 
 const cmd = process.argv[2];
-try {
+if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith("exec.mjs")) try {
   if (!COMMANDS[cmd]) throw Object.assign(new Error(`unknown command '${cmd}' (${Object.keys(COMMANDS).join(", ")})`), { fatal: true });
   out(await COMMANDS[cmd](await readStdin()));
 } catch (e) {

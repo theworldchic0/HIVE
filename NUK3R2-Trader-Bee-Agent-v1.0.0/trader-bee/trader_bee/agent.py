@@ -434,6 +434,62 @@ class TraderBee:
                     except net.NetError as e:
                         self.store.set_mark(p["asset_id"], None, "dexscreener", str(e)[:200])
             self.store.put("marks_at", t)
+            self.store.put("tp_tracking", self.track_take_profits())
+
+    def track_take_profits(self) -> dict:
+        """Book take-profit outcomes. Live: the 1inch orderbook is the truth. Paper: filled when the
+        latest mark reaches the limit. Expired either way after expiry_days."""
+        res = {"filled": 0, "partial": 0, "expired": 0}
+        t = now()
+        for it in self.store.intents(("PAPER_PLACED",), strategy="take_profit"):
+            tr = it["trigger"]
+            if t - (it["approved_at"] or it["created_at"]) > tr.get("expiry_days", 60) * 86400:
+                self.store.transition(it["id"], ("PAPER_PLACED",), state="EXPIRED", reason="paper take-profit expired unfilled")
+                res["expired"] += 1
+                continue
+            m = self.store.c.execute("SELECT price_usd FROM marks WHERE asset_id=?", (it["asset_id"],)).fetchone()
+            if m and m["price_usd"] and m["price_usd"] >= tr["limit_price_usd"]:
+                self.store.transition(it["id"], ("PAPER_PLACED",), state="PAPER_FILLED", token_amount=tr["qty"],
+                                      usd=round(tr["qty"] * tr["limit_price_usd"], 6), fill_price_usd=tr["limit_price_usd"],
+                                      reason=f"paper fill: mark ${m['price_usd']:.8g} reached the limit")
+                self.store.log("trade", f"PAPER TAKE-PROFIT FILLED {it['symbol']} @ ${tr['limit_price_usd']:.8g}", it["id"])
+                res["filled"] += 1
+        placed = self.store.intents(("PLACED",), strategy="take_profit")
+        by_chain: dict[str, list] = {}
+        for it in placed:
+            by_chain.setdefault(it["chain"], []).append(it)
+        for chain, items in by_chain.items():
+            try:
+                r = executor.call("order-status", {"chain": chain, "orderHashes": [i["tx_hash"] for i in items]}, timeout=60)
+            except executor.ExecutorError as e:
+                self.store.log("warn", f"take-profit status check failed on {chain}: {e}")
+                continue
+            if not r.get("ok"):
+                self.store.log("warn", f"take-profit status check failed on {chain}: {r.get('error')}")
+                continue
+            for it in items:
+                o = (r.get("orders") or {}).get(str(it["tx_hash"]).lower()) or {}
+                tr = it["trigger"]
+                pct = o.get("filledPct") or 0
+                if o.get("status") == "FILLED":
+                    self.store.transition(it["id"], ("PLACED",), state="CONFIRMED", token_amount=tr["qty"],
+                                          usd=round(tr["qty"] * tr["limit_price_usd"], 6), fill_price_usd=tr["limit_price_usd"],
+                                          reason="filled on the 1inch orderbook", result_json={**it["result"], "orderbook": o})
+                    self.store.log("trade", f"TAKE-PROFIT FILLED {it['symbol']} ≈${tr['qty'] * tr['limit_price_usd']:.2f}", it["id"])
+                    res["filled"] += 1
+                elif o.get("status") == "PARTIAL":
+                    self.store.update_intent(it["id"], reason=f"partially filled {pct:.1f}% (resting)", result_json={**it["result"], "orderbook": o})
+                    res["partial"] += 1
+                elif o.get("status") in ("CLOSED", "NOT_FOUND"):
+                    if pct > 0:  # closed after a partial fill: book what actually sold
+                        q = tr["qty"] * pct / 100
+                        self.store.transition(it["id"], ("PLACED",), state="CONFIRMED", token_amount=q, usd=round(q * tr["limit_price_usd"], 6),
+                                              fill_price_usd=tr["limit_price_usd"], reason=f"closed after {pct:.1f}% filled ({o.get('reason')})")
+                        res["filled"] += 1
+                    elif o.get("status") == "CLOSED" or t - (it["approved_at"] or it["created_at"]) > tr.get("expiry_days", 60) * 86400:
+                        self.store.transition(it["id"], ("PLACED",), state="EXPIRED", reason=f"orderbook: {o.get('reason') or 'no longer listed'} — nothing sold")
+                        res["expired"] += 1
+        return res
 
     def tick(self) -> dict:
         t0 = time.time()

@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "research.request \u2014 Discovery Scout (or the beekeeper) \u2192 Research Bee",
+  "description": "A CANDIDATE to research, never a verdict. Carries only observed market facts and why it was surfaced. Identity is still unverified here \u2014 research must verify the contract with >=2 sources before any verdict.",
+  "type": "object",
+  "required": [
+    "asset_id",
+    "chain",
+    "contract",
+    "symbol",
+    "source",
+    "observed"
+  ],
+  "properties": {
+    "asset_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+:0x[0-9a-f]{40}$"
+    },
+    "chain": {
+      "type": "string"
+    },
+    "contract": {
+      "type": "string",
+      "pattern": "^0x[0-9a-fA-F]{40}$"
+    },
+    "symbol": {
+      "type": "string"
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source": {
+      "type": "string"
+    },
+    "pool": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "observed": {
+      "type": "object"
+    },
+    "scout_score": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "requested_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

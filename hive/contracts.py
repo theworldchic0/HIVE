@@ -25,10 +25,11 @@ EVENT_SCHEMAS = {
     "trader.trade.executed": "trader.event.schema.json",
     "trader.trade.failed": "trader.event.schema.json",
     "hive.control": "hive.control.schema.json",
+    "research.request": "research.request.schema.json",
 }
 # free-form event types that are allowed without a schema (observability only)
 FREEFORM_PREFIXES = ("trader.status", "trader.paused", "trader.resumed", "fib.structure", "fib.data_error",
-                     "fib.learning", "queen.", "research.request", "bottom_blueprint_candidate")
+                     "fib.learning", "queen.", "scout.", "bottom_blueprint_candidate")
 
 
 class ContractError(ValueError):

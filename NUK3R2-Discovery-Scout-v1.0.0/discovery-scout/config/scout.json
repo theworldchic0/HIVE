@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "agent_id": "discovery_scout",
+  "comment": "DISCOVERY SCOUT = the automated front of the Research Bee. Every 6h it scans Base + Robinhood Chain new and trending pools, filters them, and queues CANDIDATES for research. It never scores, never publishes a research.verdict and can never cause a trade: a token reaches the Trader Bee only after research says PASS. Every number here is a beekeeper setting.",
+  "networks": ["base", "robinhood"],
+  "interval_hours": 6,
+  "sources": ["trending_pools", "new_pools"],
+  "pages_per_source": 2,
+  "filters": {
+    "min_liquidity_usd": 50000,
+    "min_volume_24h_usd": 25000,
+    "min_pool_age_hours": 24,
+    "max_pool_age_days": 120,
+    "min_buys_24h": 50,
+    "min_buy_sell_ratio": 0.6,
+    "max_abs_change_24h_pct": 400
+  },
+  "quote_assets": {
+    "base": ["0x4200000000000000000000000000000000000006", "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913", "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf", "0x50c5725949a6f0c72e6c4a641f24049a917db0cb", "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2"],
+    "robinhood": ["0x5fc5360d0400a0fd4f2af552add042d716f1d168"],
+    "comment": "The pool's OTHER side is the candidate. Base: WETH, USDC, cbBTC, DAI, USDT. Robinhood: USDG. Unknown quote assets are handled by picking the side that is not in this list."
+  },
+  "max_new_per_run": 25,
+  "requeue_after_days": 30
+}

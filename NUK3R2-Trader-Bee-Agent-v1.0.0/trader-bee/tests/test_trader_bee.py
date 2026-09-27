@@ -422,3 +422,40 @@ def test_disarm_mid_tick_blocks_send(world, monkeypatch):
     it = intents(world)[0]
     assert it["state"] == "REJECTED" and "nothing sent" in it["reason"]
     assert not any(c == "buy" for c, _ in world.fx.calls)
+
+
+def test_paper_take_profit_fills_at_mark(world):
+    world.m.add(T1)
+    pub_v(verdict(T1, discovery=False))
+    pub_z(zone_event(T1))
+    world.bee.tick()
+    tp = intents(world, strategy="take_profit")[0]
+    world.bee.approve(tp["id"])
+    world.bee.store.set_mark(f"base:{T1.lower()}", 0.05, "test")  # above the 0.0255 limit
+    world.bee.track_take_profits()
+    tp = world.bee.store.intent(tp["id"])
+    assert tp["state"] == "PAPER_FILLED" and tp["token_amount"] == tp["trigger"]["qty"]
+    pos = world.bee.store.positions("paper")[0]
+    assert abs(pos["tokens_net"] - pos["tokens"] / 2) < 1e-9  # half the bag sold
+
+
+def test_live_take_profit_orderbook_states(world):
+    world.arm()
+    world.m.add(T1)
+    pub_v(verdict(T1, discovery=False))
+    pub_z(zone_event(T1))
+    world.bee.tick()
+    tp = intents(world, strategy="take_profit")[0]
+    assert world.bee.approve(tp["id"])["state"] == "PLACED"
+    real = world.fx.__call__
+
+    def fx(cmd, p, t, status={"s": "PARTIAL", "pct": 40.0}):
+        if cmd == "order-status":
+            return {"ok": True, "orders": {h.lower(): {"status": status["s"], "filledPct": status["pct"], "reason": None} for h in p["orderHashes"]}}
+        return real(cmd, p, t)
+    from trader_bee import executor
+    executor.runner = fx
+    assert world.bee.track_take_profits()["partial"] == 1
+    fx.__defaults__[0].update(s="FILLED", pct=100.0)
+    assert world.bee.track_take_profits()["filled"] == 1
+    assert world.bee.store.intent(tp["id"])["state"] == "CONFIRMED"
